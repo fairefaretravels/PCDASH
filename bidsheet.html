@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Post-Construction Final Cleaning Bid Sheet</title>
+<style>
+  :root {
+    --ink: #1c2321;
+    --ink-soft: #4a534f;
+    --paper: #fbfaf6;
+    --panel: #ffffff;
+    --line: #d8d3c4;
+    --accent: #2f5d4f;
+    --accent-soft: #e7efe9;
+    --warn: #b5493a;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 40px 20px;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Georgia', 'Iowan Old Style', serif;
+    line-height: 1.4;
+  }
+
+  .sheet {
+    max-width: 780px;
+    margin: 0 auto;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 48px 52px;
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 18px;
+    margin-bottom: 30px;
+  }
+
+  header h1 {
+    font-size: 26px;
+    margin: 0;
+    letter-spacing: 0.3px;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  header .tag {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--ink-soft);
+  }
+
+  h2 {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 6px;
+    margin: 32px 0 16px;
+  }
+
+  h2:first-of-type { margin-top: 0; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 24px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .field.full { grid-column: 1 / -1; }
+
+  label {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--ink-soft);
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="date"],
+  textarea {
+    font-family: inherit;
+    font-size: 15px;
+    color: var(--ink);
+    border: none;
+    border-bottom: 1px solid var(--line);
+    background: transparent;
+    padding: 5px 2px;
+    width: 100%;
+  }
+
+  input:focus, textarea:focus {
+    outline: none;
+    border-bottom: 1.5px solid var(--accent);
+    background: var(--accent-soft);
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 50px;
+    border: 1px solid var(--line);
+    padding: 8px;
+  }
+
+  fieldset {
+    border: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .radio-row, .check-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 22px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px;
+  }
+
+  .radio-row label, .check-row label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 14px;
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  input[type="checkbox"], input[type="radio"] {
+    width: 15px;
+    height: 15px;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  .checklist {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 20px;
+  }
+
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: 1fr 160px;
+    gap: 12px 20px;
+    align-items: center;
+  }
+
+  .pricing-grid label {
+    font-size: 14px;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--ink);
+    font-family: Georgia, serif;
+  }
+
+  .money {
+    position: relative;
+  }
+
+  .money::before {
+    content: "$";
+    position: absolute;
+    left: 2px;
+    top: 6px;
+    color: var(--ink-soft);
+  }
+
+  .money input {
+    padding-left: 16px;
+  }
+
+  .total-row {
+    border-top: 2px solid var(--accent);
+    padding-top: 10px;
+    margin-top: 4px;
+  }
+
+  .total-row label {
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .terms {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    padding-left: 18px;
+    margin: 0;
+  }
+
+  .terms li { margin-bottom: 6px; }
+
+  .sign-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    margin-top: 10px;
+  }
+
+  .actions {
+    margin-top: 40px;
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  button {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    padding: 13px 26px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+
+  #submitBtn {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  #submitBtn:hover { background: #234a3f; }
+
+  #printBtn {
+    background: transparent;
+    color: var(--accent);
+    border: 1.5px solid var(--accent);
+  }
+
+  #printBtn:hover { background: var(--accent-soft); }
+
+  .status {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+
+  .required-note {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+
+  @media (max-width: 640px) {
+    .sheet { padding: 30px 22px; }
+    .grid, .checklist, .sign-grid, .pricing-grid { grid-template-columns: 1fr; }
+    header { flex-direction: column; align-items: flex-start; gap: 6px; }
+  }
+
+  @media print {
+    body { padding: 0; background: #fff; }
+    .sheet { border: none; max-width: 100%; }
+    .actions, .required-note { display: none; }
+    input, textarea { border-bottom: 1px solid #999; }
+  }
+</style>
+</head>
+<body>
+
+<form class="sheet" id="bidForm">
+  <header>
+    <h1>Post-Construction Final Cleaning<br>Bid Sheet</h1>
+    <div class="tag">Saneca</div>
+  </header>
+
+  <h2>Company &amp; Contact</h2>
+  <div class="grid">
+    <div class="field">
+      <label for="companyName">Company Name</label>
+      <input type="text" id="companyName" name="Company Name">
+    </div>
+    <div class="field">
+      <label for="contactName">Contact Name</label>
+      <input type="text" id="contactName" name="Contact Name">
+    </div>
+    <div class="field">
+      <label for="phone">Phone</label>
+      <input type="tel" id="phone" name="Phone">
+    </div>
+    <div class="field">
+      <label for="email">Email</label>
+      <input type="email" id="email" name="Email">
+    </div>
+  </div>
+
+  <h2>Project Information</h2>
+  <div class="grid">
+    <div class="field">
+      <label for="clientContractor">Client / Contractor</label>
+      <input type="text" id="clientContractor" name="Client/Contractor">
+    </div>
+    <div class="field">
+      <label for="projectAddress">Project Address</label>
+      <input type="text" id="projectAddress" name="Project Address">
+    </div>
+    <div class="field full">
+      <label>Project Type</label>
+      <div class="check-row">
+        <label><input type="checkbox" name="Project Type" value="New Construction"> New Construction</label>
+        <label><input type="checkbox" name="Project Type" value="Renovation/Remodel"> Renovation/Remodel</label>
+        <label><input type="checkbox" name="Project Type" value="Residential"> Residential</label>
+        <label><input type="checkbox" name="Project Type" value="Commercial"> Commercial</label>
+      </div>
+    </div>
+    <div class="field">
+      <label for="sqft">Estimated Square Footage</label>
+      <input type="number" id="sqft" name="Estimated Square Footage">
+    </div>
+    <div class="field">
+      <label for="bathrooms">Number of Bathrooms</label>
+      <input type="number" id="bathrooms" name="Number of Bathrooms">
+    </div>
+    <div class="field">
+      <label for="kitchens">Number of Kitchens</label>
+      <input type="number" id="kitchens" name="Number of Kitchens">
+    </div>
+    <div class="field">
+      <label for="floors">Number of Floors/Levels</label>
+      <input type="number" id="floors" name="Number of Floors/Levels">
+    </div>
+  </div>
+
+  <h2>Scope of Work</h2>
+  <p class="required-note" style="margin-top:-8px;">Post-construction final cleaning services include:</p>
+  <div class="checklist">
+    <label><input type="checkbox" name="Scope" value="Removal of construction dust from surfaces"> Removal of construction dust from surfaces</label>
+    <label><input type="checkbox" name="Scope" value="Wiping doors, trim, baseboards, and fixtures"> Wiping doors, trim, baseboards, and fixtures</label>
+    <label><input type="checkbox" name="Scope" value="Cleaning cabinets and countertops"> Cleaning cabinets and countertops</label>
+    <label><input type="checkbox" name="Scope" value="Vacuuming and mopping floors"> Vacuuming and mopping floors</label>
+    <label><input type="checkbox" name="Scope" value="Bathroom detail cleaning"> Bathroom detail cleaning</label>
+    <label><input type="checkbox" name="Scope" value="Kitchen detail cleaning"> Kitchen detail cleaning</label>
+    <label><input type="checkbox" name="Scope" value="Interior glass/window cleaning (if requested)"> Interior glass/window cleaning (if requested)</label>
+    <label><input type="checkbox" name="Scope" value="Final walkthrough touch-up cleaning"> Final walkthrough touch-up cleaning</label>
+  </div>
+
+  <div class="field full" style="margin-top:18px;">
+    <label for="additionalServices">Additional services requested</label>
+    <textarea id="additionalServices" name="Additional Services Requested"></textarea>
+  </div>
+
+  <h2>Pricing</h2>
+  <div class="pricing-grid">
+    <label for="basePrice">Base Cleaning Price</label>
+    <div class="money"><input type="number" id="basePrice" name="Base Cleaning Price" step="0.01"></div>
+
+    <label for="addlPrice">Additional Services</label>
+    <div class="money"><input type="number" id="addlPrice" name="Additional Services Price" step="0.01"></div>
+
+    <div class="total-row"><label for="totalPrice">Total Project Bid</label></div>
+    <div class="money total-row"><input type="number" id="totalPrice" name="Total Project Bid" step="0.01"></div>
+
+    <label for="completionTime">Estimated Completion Time</label>
+    <input type="text" id="completionTime" name="Estimated Completion Time" style="grid-column: span 1;">
+  </div>
+
+  <h2>Terms</h2>
+  <ul class="terms">
+    <li>Pricing is based on the scope of work provided at the time of estimate.</li>
+    <li>Additional work outside the approved scope may require a change order.</li>
+    <li>Client/contractor will provide access to the property during scheduled cleaning times.</li>
+    <li>Final payment is due according to agreed payment terms.</li>
+  </ul>
+
+  <h2>Accepted By</h2>
+  <div class="sign-grid">
+    <div class="field">
+      <label for="signerName">Contractor/Client Name</label>
+      <input type="text" id="signerName" name="Contractor/Client Name">
+    </div>
+    <div class="field">
+      <label for="signDate">Date</label>
+      <input type="date" id="signDate" name="Date">
+    </div>
+    <div class="field full">
+      <label for="signature">Signature (type full name to sign)</label>
+      <input type="text" id="signature" name="Signature">
+    </div>
+  </div>
+
+  <div class="actions">
+    <button type="button" id="submitBtn">Submit Bid via Email</button>
+    <button type="button" id="printBtn">Print / Save as PDF</button>
+    <span class="status" id="statusMsg"></span>
+  </div>
+  <p class="required-note">"Submit" opens your email app with this bid sheet pre-filled, addressed to houseofmedia.marketing@gmail.com — review and hit send from there.</p>
+</form>
+
+<script>
+  const RECIPIENT = "houseofmedia.marketing@gmail.com";
+
+  document.getElementById('basePrice').addEventListener('input', updateTotal);
+  document.getElementById('addlPrice').addEventListener('input', updateTotal);
+
+  function updateTotal() {
+    const base = parseFloat(document.getElementById('basePrice').value) || 0;
+    const addl = parseFloat(document.getElementById('addlPrice').value) || 0;
+    document.getElementById('totalPrice').value = (base + addl).toFixed(2);
+  }
+
+  function collectData() {
+    const form = document.getElementById('bidForm');
+    const lines = [];
+    const sections = form.querySelectorAll('h2');
+
+    // Simple grouped text/number/date fields
+    const singleFields = form.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="date"], textarea');
+    const singleData = {};
+    singleFields.forEach(el => {
+      if (el.name) singleData[el.name] = el.value.trim();
+    });
+
+    const checkedGroups = {};
+    form.querySelectorAll('input[type="checkbox"]:checked').forEach(el => {
+      if (!checkedGroups[el.name]) checkedGroups[el.name] = [];
+      checkedGroups[el.name].push(el.value);
+    });
+
+    lines.push("POST-CONSTRUCTION FINAL CLEANING BID SHEET");
+    lines.push("Saneca");
+    lines.push("");
+    lines.push("COMPANY & CONTACT");
+    lines.push(`Company Name: ${singleData['Company Name'] || ''}`);
+    lines.push(`Contact Name: ${singleData['Contact Name'] || ''}`);
+    lines.push(`Phone: ${singleData['Phone'] || ''}`);
+    lines.push(`Email: ${singleData['Email'] || ''}`);
+    lines.push("");
+    lines.push("PROJECT INFORMATION");
+    lines.push(`Client/Contractor: ${singleData['Client/Contractor'] || ''}`);
+    lines.push(`Project Address: ${singleData['Project Address'] || ''}`);
+    lines.push(`Project Type: ${(checkedGroups['Project Type'] || []).join(', ') || '—'}`);
+    lines.push(`Estimated Square Footage: ${singleData['Estimated Square Footage'] || ''}`);
+    lines.push(`Number of Bathrooms: ${singleData['Number of Bathrooms'] || ''}`);
+    lines.push(`Number of Kitchens: ${singleData['Number of Kitchens'] || ''}`);
+    lines.push(`Number of Floors/Levels: ${singleData['Number of Floors/Levels'] || ''}`);
+    lines.push("");
+    lines.push("SCOPE OF WORK");
+    const scope = checkedGroups['Scope'] || [];
+    if (scope.length) {
+      scope.forEach(s => lines.push(`- ${s}`));
+    } else {
+      lines.push("(none selected)");
+    }
+    lines.push(`Additional services requested: ${singleData['Additional Services Requested'] || '—'}`);
+    lines.push("");
+    lines.push("PRICING");
+    lines.push(`Base Cleaning Price: $${singleData['Base Cleaning Price'] || '0.00'}`);
+    lines.push(`Additional Services: $${singleData['Additional Services Price'] || '0.00'}`);
+    lines.push(`Total Project Bid: $${singleData['Total Project Bid'] || '0.00'}`);
+    lines.push(`Estimated Completion Time: ${singleData['Estimated Completion Time'] || ''}`);
+    lines.push("");
+    lines.push("TERMS");
+    lines.push("- Pricing is based on the scope of work provided at the time of estimate.");
+    lines.push("- Additional work outside the approved scope may require a change order.");
+    lines.push("- Client/contractor will provide access to the property during scheduled cleaning times.");
+    lines.push("- Final payment is due according to agreed payment terms.");
+    lines.push("");
+    lines.push("ACCEPTED BY");
+    lines.push(`Contractor/Client Name: ${singleData['Contractor/Client Name'] || ''}`);
+    lines.push(`Signature: ${singleData['Signature'] || ''}`);
+    lines.push(`Date: ${singleData['Date'] || ''}`);
+
+    return lines.join("\n");
+  }
+
+  document.getElementById('submitBtn').addEventListener('click', () => {
+    const body = collectData();
+    const contractorName = document.getElementById('clientContractor').value.trim();
+    const subject = `Post-Construction Cleaning Bid${contractorName ? ' — ' + contractorName : ''}`;
+    const mailto = `mailto:${RECIPIENT}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailto;
+    document.getElementById('statusMsg').textContent = "Opening your email app…";
+  });
+
+  document.getElementById('printBtn').addEventListener('click', () => {
+    window.print();
+  });
+</script>
+
+</body>
+</html>
