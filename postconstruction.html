@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Post-Construction Cleaning Starter Package</title>
+<style>
+  :root {
+    --ink: #1c2321; --ink-soft: #4a534f; --paper: #fbfaf6; --panel: #ffffff;
+    --line: #d8d3c4; --accent: #2f5d4f; --accent-soft: #e7efe9;
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:40px 20px; background:var(--paper); color:var(--ink); font-family: Georgia, 'Iowan Old Style', serif; line-height:1.45; }
+  .sheet { max-width: 820px; margin:0 auto; background:var(--panel); border:1px solid var(--line); padding:48px 52px; }
+  header { border-bottom:3px solid var(--accent); padding-bottom:18px; margin-bottom:20px; }
+  header h1 { font-size:26px; margin:0; color:var(--accent); }
+  header .tag { font-family:'Helvetica Neue',Arial,sans-serif; font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--ink-soft); margin-top:6px; }
+  nav.toc { font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; margin-bottom:36px; padding:14px 18px; background:var(--accent-soft); border-radius:4px; }
+  nav.toc a { color:var(--accent); text-decoration:none; margin-right:16px; font-weight:600; }
+  nav.toc a:hover { text-decoration:underline; }
+  section { margin-bottom:44px; scroll-margin-top:20px; }
+  h2 { font-family:'Helvetica Neue',Arial,sans-serif; font-size:12px; text-transform:uppercase; letter-spacing:1.5px; color:var(--accent); border-bottom:1px solid var(--line); padding-bottom:6px; margin:0 0 18px; }
+  h3 { font-size:17px; color:var(--ink); margin:22px 0 8px; }
+  .pkg { border:1px solid var(--line); border-radius:6px; padding:18px 20px; margin-bottom:16px; }
+  .pkg .best { font-family:'Helvetica Neue',Arial,sans-serif; font-size:12px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.4px; margin-bottom:8px; }
+  .pkg ul { margin:8px 0; padding-left:20px; }
+  .pkg .price { font-family:'Helvetica Neue',Arial,sans-serif; font-weight:700; color:var(--accent); font-size:15px; margin-top:10px; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px 24px; margin-bottom:16px; }
+  .field { display:flex; flex-direction:column; gap:4px; }
+  .field.full { grid-column:1/-1; }
+  label { font-family:'Helvetica Neue',Arial,sans-serif; font-size:11px; text-transform:uppercase; letter-spacing:.6px; color:var(--ink-soft); }
+  input[type=text], input[type=email], input[type=tel], input[type=number], input[type=date], textarea {
+    font-family:inherit; font-size:15px; color:var(--ink); border:none; border-bottom:1px solid var(--line);
+    background:transparent; padding:5px 2px; width:100%;
+  }
+  input:focus, textarea:focus { outline:none; border-bottom:1.5px solid var(--accent); background:var(--accent-soft); }
+  textarea { border:1px solid var(--line); padding:8px; min-height:50px; resize:vertical; }
+  .checklist { display:grid; grid-template-columns:1fr 1fr; gap:8px 20px; font-family:'Helvetica Neue',Arial,sans-serif; font-size:14px; }
+  .checklist label { display:flex; align-items:center; gap:8px; text-transform:none; letter-spacing:0; font-size:14px; color:var(--ink); cursor:pointer; }
+  input[type=checkbox] { width:15px; height:15px; accent-color:var(--accent); cursor:pointer; }
+  .subgroup { margin-bottom:18px; }
+  .subgroup h4 { font-family:'Helvetica Neue',Arial,sans-serif; font-size:12.5px; text-transform:uppercase; letter-spacing:.5px; color:var(--ink-soft); margin:0 0 8px; }
+  .quote { font-family:'Helvetica Neue',Arial,sans-serif; font-style:italic; color:var(--ink-soft); border-left:3px solid var(--accent); padding-left:14px; margin:18px 0; font-size:14.5px; }
+  .actions { margin-top:44px; display:flex; gap:14px; align-items:center; flex-wrap:wrap; border-top:2px solid var(--accent); padding-top:26px; }
+  button { font-family:'Helvetica Neue',Arial,sans-serif; font-size:14px; font-weight:600; letter-spacing:.3px; padding:13px 26px; border:none; border-radius:3px; cursor:pointer; }
+  #submitBtn { background:var(--accent); color:#fff; }
+  #submitBtn:hover { background:#234a3f; }
+  #printBtn { background:transparent; color:var(--accent); border:1.5px solid var(--accent); }
+  #printBtn:hover { background:var(--accent-soft); }
+  .status { font-family:'Helvetica Neue',Arial,sans-serif; font-size:12.5px; color:var(--ink-soft); }
+  .required-note { font-family:'Helvetica Neue',Arial,sans-serif; font-size:11.5px; color:var(--ink-soft); margin-top:6px; }
+  @media (max-width:640px) {
+    .sheet { padding:30px 22px; }
+    .grid, .checklist { grid-template-columns:1fr; }
+  }
+  @media print {
+    body { padding:0; background:#fff; }
+    .sheet { border:none; }
+    .actions, nav.toc, .required-note { display:none; }
+  }
+</style>
+</head>
+<body>
+<div class="sheet" id="pkgForm">
+  <header>
+    <h1>Post-Construction Cleaning Starter Package</h1>
+    <div class="tag">Saneca</div>
+  </header>
+
+  <nav class="toc">
+    <a href="#pricing">1. Pricing Guide</a>
+    <a href="#checklist">2. Inspection Checklist</a>
+    <a href="#agreement">3. Contractor Agreement</a>
+    <a href="#invoice">4. Invoice Template</a>
+    <a href="#training">5. Training Plan</a>
+  </nav>
+
+  <section id="pricing">
+    <h2>1. Service Packages &amp; Pricing Guide</h2>
+
+    <div class="pkg">
+      <h3>Package 1: Basic Final Clean</h3>
+      <div class="best">Best for: Small renovations, light construction</div>
+      <p>Includes:</p>
+      <ul>
+        <li>Construction dust removal</li>
+        <li>Vacuuming and mopping</li>
+        <li>Surface wipe-down</li>
+        <li>Bathroom cleaning</li>
+        <li>Kitchen cleaning</li>
+        <li>Trash bag removal (inside property only)</li>
+        <li>Final walkthrough touch-up</li>
+      </ul>
+      <div class="price">Starting price: $0.20–$0.35 per square foot</div>
+    </div>
+
+    <div class="pkg">
+      <h3>Package 2: Detailed Builder Final Clean</h3>
+      <div class="best">Best for: New builds and major remodels</div>
+      <p>Includes everything in Basic, plus:</p>
+      <ul>
+        <li>Cabinet interior/exterior cleaning</li>
+        <li>Baseboards and trim detailing</li>
+        <li>Doors and frames</li>
+        <li>Fixtures polished</li>
+        <li>Window interior cleaning</li>
+        <li>Appliance cleaning</li>
+        <li>Detailed inspection checklist</li>
+      </ul>
+      <div class="price">Starting price: $0.35–$0.60 per square foot</div>
+    </div>
+
+    <div class="pkg">
+      <h3>Package 3: Premium Move-In Ready Clean</h3>
+      <div class="best">Best for: Luxury homes, real estate, high-end renovations</div>
+      <p>Includes:</p>
+      <ul>
+        <li>Everything above</li>
+        <li>Extra detail inspection</li>
+        <li>Touch-up visit before closing</li>
+        <li>Photo documentation</li>
+        <li>Priority scheduling</li>
+      </ul>
+      <div class="price">Starting price: Custom Quote</div>
+    </div>
+  </section>
+
+  <section id="checklist">
+    <h2>2. Contractor Inspection Checklist — Final Cleaning Quality</h2>
+    <div class="grid">
+      <div class="field"><label>Project</label><input type="text" name="Checklist Project"></div>
+      <div class="field"><label>Date</label><input type="date" name="Checklist Date"></div>
+    </div>
+
+    <div class="subgroup">
+      <h4>Kitchen</h4>
+      <div class="checklist">
+        <label><input type="checkbox" name="Kitchen Checklist" value="Cabinets cleaned"> Cabinets cleaned</label>
+        <label><input type="checkbox" name="Kitchen Checklist" value="Countertops wiped"> Countertops wiped</label>
+        <label><input type="checkbox" name="Kitchen Checklist" value="Sink polished"> Sink polished</label>
+        <label><input type="checkbox" name="Kitchen Checklist" value="Appliances cleaned"> Appliances cleaned</label>
+        <label><input type="checkbox" name="Kitchen Checklist" value="Floors detailed"> Floors detailed</label>
+      </div>
+    </div>
+
+    <div class="subgroup">
+      <h4>Bathrooms</h4>
+      <div class="checklist">
+        <label><input type="checkbox" name="Bathroom Checklist" value="Toilets sanitized"> Toilets sanitized</label>
+        <label><input type="checkbox" name="Bathroom Checklist" value="Showers/tubs cleaned"> Showers/tubs cleaned</label>
+        <label><input type="checkbox" name="Bathroom Checklist" value="Mirrors streak-free"> Mirrors streak-free</label>
+        <label><input type="checkbox" name="Bathroom Checklist" value="Fixtures polished"> Fixtures polished</label>
+        <label><input type="checkbox" name="Bathroom Checklist" value="Floors cleaned"> Floors cleaned</label>
+      </div>
+    </div>
+
+    <div class="subgroup">
+      <h4>Living Areas</h4>
+      <div class="checklist">
+        <label><input type="checkbox" name="Living Areas Checklist" value="Construction dust removed"> Construction dust removed</label>
+        <label><input type="checkbox" name="Living Areas Checklist" value="Baseboards cleaned"> Baseboards cleaned</label>
+        <label><input type="checkbox" name="Living Areas Checklist" value="Doors wiped"> Doors wiped</label>
+        <label><input type="checkbox" name="Living Areas Checklist" value="Floors vacuumed/mopped"> Floors vacuumed/mopped</label>
+        <label><input type="checkbox" name="Living Areas Checklist" value="Windows checked"> Windows checked</label>
+      </div>
+    </div>
+
+    <div class="subgroup">
+      <h4>Final Walkthrough</h4>
+      <div class="checklist">
+        <label><input type="checkbox" name="Final Walkthrough Checklist" value="All rooms inspected"> All rooms inspected</label>
+        <label><input type="checkbox" name="Final Walkthrough Checklist" value="Touch-ups completed"> Touch-ups completed</label>
+        <label><input type="checkbox" name="Final Walkthrough Checklist" value="Photos taken"> Photos taken</label>
+        <label><input type="checkbox" name="Final Walkthrough Checklist" value="Client notified"> Client notified</label>
+      </div>
+    </div>
+  </section>
+
+  <section id="agreement">
+    <h2>3. Contractor Agreement Basics — Scope Agreement</h2>
+    <div class="grid">
+      <div class="field"><label>Company</label><input type="text" name="Agreement Company"></div>
+      <div class="field"><label>Contractor</label><input type="text" name="Agreement Contractor"></div>
+      <div class="field full"><label>Project Address</label><input type="text" name="Agreement Project Address"></div>
+      <div class="field full">
+        <label>Services Provided</label>
+        <textarea name="Agreement Services">Post-construction final cleaning including dust removal, detailed surface cleaning, floor cleaning, and preparation for final walkthrough.</textarea>
+      </div>
+      <div class="field"><label>Deposit (if applicable, %)</label><input type="number" name="Agreement Deposit Percent"></div>
+      <div class="field"><label>Balance due (days after completion)</label><input type="number" name="Agreement Balance Due Days"></div>
+      <div class="field full">
+        <label>Additional Work Clause</label>
+        <textarea name="Agreement Additional Work">Work outside the agreed scope requires approval before completion.</textarea>
+      </div>
+    </div>
+  </section>
+
+  <section id="invoice">
+    <h2>4. Invoice Template</h2>
+    <div class="grid">
+      <div class="field full"><label>Business Name</label><input type="text" name="Invoice Business Name"></div>
+      <div class="field"><label>Invoice #</label><input type="text" name="Invoice Number"></div>
+      <div class="field"><label>Bill To</label><input type="text" name="Invoice Bill To"></div>
+      <div class="field full"><label>Project</label><input type="text" name="Invoice Project"></div>
+      <div class="field"><label>Services</label><input type="text" name="Invoice Services" value="Post-Construction Final Cleaning"></div>
+      <div class="field"><label>Amount ($)</label><input type="number" step="0.01" name="Invoice Amount"></div>
+      <div class="field"><label>Payment Due</label><input type="date" name="Invoice Payment Due"></div>
+    </div>
+    <p class="quote">"Thank you for your business."</p>
+  </section>
+
+  <section id="training">
+    <h2>5. Employee Training Plan (Future Team)</h2>
+
+    <div class="subgroup">
+      <h4>Cleaning Technician — Level 1</h4>
+      <ul>
+        <li>Safety procedures</li>
+        <li>Chemical handling</li>
+        <li>PPE use</li>
+        <li>Construction dust removal</li>
+        <li>Quality standards</li>
+        <li>Customer communication</li>
+      </ul>
+    </div>
+
+    <div class="subgroup">
+      <h4>Lead Technician (Additional)</h4>
+      <ul>
+        <li>Crew management</li>
+        <li>Inspection</li>
+        <li>Contractor communication</li>
+        <li>Training new employees</li>
+      </ul>
+    </div>
+
+    <p class="quote">"We provide insured post-construction final cleaning teams that help contractors deliver move-in-ready properties on schedule." — company positioning statement</p>
+  </section>
+
+  <div class="actions">
+    <div class="field" style="min-width:220px;">
+      <label for="toEmail">Send To (email)</label>
+      <input type="email" id="toEmail" placeholder="recipient@example.com">
+    </div>
+    <button type="button" id="submitBtn">Send Package via Email</button>
+    <button type="button" id="printBtn">Print / Save as PDF</button>
+    <span class="status" id="statusMsg"></span>
+  </div>
+  <p class="required-note">Enter a recipient, then "Send Package via Email" opens your email app with this document pre-filled.</p>
+</div>
+
+<script>
+  function val(name) {
+    const el = document.querySelector(`[name="${name}"]`);
+    return el ? el.value.trim() : '';
+  }
+  function checkedList(name) {
+    return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(el => el.value);
+  }
+  function collectData() {
+    const lines = [];
+    lines.push("POST-CONSTRUCTION CLEANING STARTER PACKAGE");
+    lines.push("Saneca");
+    lines.push("");
+    lines.push("1. SERVICE PACKAGES & PRICING GUIDE");
+    lines.push("Package 1: Basic Final Clean — $0.20–$0.35/sq ft");
+    lines.push("Package 2: Detailed Builder Final Clean — $0.35–$0.60/sq ft");
+    lines.push("Package 3: Premium Move-In Ready Clean — Custom Quote");
+    lines.push("");
+    lines.push("2. CONTRACTOR INSPECTION CHECKLIST");
+    lines.push(`Project: ${val('Checklist Project')}`);
+    lines.push(`Date: ${val('Checklist Date')}`);
+    lines.push(`Kitchen: ${checkedList('Kitchen Checklist').join(', ') || '(none checked)'}`);
+    lines.push(`Bathrooms: ${checkedList('Bathroom Checklist').join(', ') || '(none checked)'}`);
+    lines.push(`Living Areas: ${checkedList('Living Areas Checklist').join(', ') || '(none checked)'}`);
+    lines.push(`Final Walkthrough: ${checkedList('Final Walkthrough Checklist').join(', ') || '(none checked)'}`);
+    lines.push("");
+    lines.push("3. CONTRACTOR AGREEMENT BASICS");
+    lines.push(`Company: ${val('Agreement Company')}`);
+    lines.push(`Contractor: ${val('Agreement Contractor')}`);
+    lines.push(`Project Address: ${val('Agreement Project Address')}`);
+    lines.push(`Services Provided: ${val('Agreement Services')}`);
+    lines.push(`Deposit: ${val('Agreement Deposit Percent')}%`);
+    lines.push(`Balance Due: ${val('Agreement Balance Due Days')} days after completion`);
+    lines.push(`Additional Work: ${val('Agreement Additional Work')}`);
+    lines.push("");
+    lines.push("4. INVOICE TEMPLATE");
+    lines.push(`Business Name: ${val('Invoice Business Name')}`);
+    lines.push(`Invoice #: ${val('Invoice Number')}`);
+    lines.push(`Bill To: ${val('Invoice Bill To')}`);
+    lines.push(`Project: ${val('Invoice Project')}`);
+    lines.push(`Services: ${val('Invoice Services')}`);
+    lines.push(`Amount: $${val('Invoice Amount')}`);
+    lines.push(`Payment Due: ${val('Invoice Payment Due')}`);
+    lines.push("");
+    lines.push("5. EMPLOYEE TRAINING PLAN");
+    lines.push("Cleaning Technician Level 1: Safety procedures, Chemical handling, PPE use, Construction dust removal, Quality standards, Customer communication");
+    lines.push("Lead Technician (Additional): Crew management, Inspection, Contractor communication, Training new employees");
+    lines.push("");
+    lines.push('Positioning: "We provide insured post-construction final cleaning teams that help contractors deliver move-in-ready properties on schedule."');
+    return lines.join("\n");
+  }
+
+  document.getElementById('submitBtn').addEventListener('click', () => {
+    const to = document.getElementById('toEmail').value.trim();
+    if (!to) {
+      document.getElementById('statusMsg').textContent = "Enter a recipient email first.";
+      return;
+    }
+    const body = collectData();
+    const subject = "Post-Construction Cleaning Starter Package — Saneca";
+    const mailto = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailto;
+    document.getElementById('statusMsg').textContent = "Opening your email app…";
+  });
+
+  document.getElementById('printBtn').addEventListener('click', () => window.print());
+</script>
+</body>
+</html>
