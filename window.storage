@@ -1,0 +1,241 @@
+/**
+ * SITE OPS BOARD — Google Sheets backend
+ * ----------------------------------------------------
+ * 1. Paste this whole file into an Apps Script project (script.google.com)
+ *    bound to (or pointed at) your Google Sheet.
+ * 2. Set SHEET_ID and DRIVE_FOLDER_ID below.
+ * 3. Run setupSheet() once (from the Apps Script editor) to create the
+ *    tabs + headers and seed the starter leads/scripts.
+ * 4. Deploy > New deployment > Web app.
+ *      Execute as:  Me
+ *      Who has access: Anyone
+ *    Copy the /exec URL into API_URL in index.html.
+ */
+
+const SHEET_ID = 'PASTE_YOUR_GOOGLE_SHEET_ID_HERE';
+const DRIVE_FOLDER_ID = 'PASTE_YOUR_DRIVE_FOLDER_ID_HERE'; // folder for vendor files
+
+/* ================= WEB APP ENTRY POINTS ================= */
+
+function doGet(e) {
+  const sheetName = e.parameter.sheet;
+  const sheet = getSheet_(sheetName);
+  if (!sheet) return jsonOut_({ error: 'Unknown sheet: ' + sheetName });
+  return jsonOut_(sheetToObjects_(sheet));
+}
+
+function doPost(e) {
+  let body;
+  try {
+    body = JSON.parse(e.postData.contents);
+  } catch (err) {
+    return jsonOut_({ error: 'Bad JSON body' });
+  }
+
+  const sheet = getSheet_(body.sheet);
+  if (!sheet) return jsonOut_({ error: 'Unknown sheet: ' + body.sheet });
+
+  if (body.action === 'insert') {
+    insertRow_(sheet, body.data);
+    return jsonOut_({ ok: true, data: body.data });
+  }
+
+  if (body.action === 'update') {
+    updateRow_(sheet, body.idField || 'id', body.data);
+    return jsonOut_({ ok: true });
+  }
+
+  if (body.action === 'uploadFile') {
+    const folder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
+    const base64 = String(body.base64 || '').split(',').pop();
+    const bytes = Utilities.base64Decode(base64);
+    const blob = Utilities.newBlob(bytes, body.mimeType || 'application/octet-stream', body.name);
+    const file = folder.createFile(blob);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+
+    const meta = {
+      id: 'f-' + Date.now(),
+      name: body.name,
+      mimeType: body.mimeType || '',
+      size: body.size || bytes.length,
+      driveUrl: file.getUrl(),
+      addedBy: body.addedBy || 'unknown',
+      ts: Date.now()
+    };
+    insertRow_(getSheet_('Files'), meta);
+    return jsonOut_(meta);
+  }
+
+  return jsonOut_({ error: 'Unknown action: ' + body.action });
+}
+
+/* ================= ONE-TIME SETUP ================= */
+
+function setupSheet() {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+
+  makeTab_(ss, 'Leads', ['id', 'company', 'type', 'phone', 'area', 'status', 'notes']);
+  makeTab_(ss, 'Chat', ['id', 'author', 'text', 'ts']);
+  makeTab_(ss, 'Scripts', ['id', 'title', 'tag', 'body']);
+  makeTab_(ss, 'Files', ['id', 'name', 'mimeType', 'size', 'driveUrl', 'addedBy', 'ts']);
+
+  seedLeads_(ss);
+  seedScripts_(ss);
+}
+
+function makeTab_(ss, name, headers) {
+  let sheet = ss.getSheetByName(name);
+  if (!sheet) sheet = ss.insertSheet(name);
+  sheet.clear();
+  sheet.appendRow(headers);
+  sheet.setFrozenRows(1);
+}
+
+function seedLeads_(ss) {
+  const sheet = ss.getSheetByName('Leads');
+  const seed = [
+    ["Craftworks Construction", "Custom Homes / Remodeling", "", ""],
+    ["Campbell Construction Ltd", "General Contractor / Custom Homes", "", ""],
+    ["Northside Builders", "Custom Home Builder", "", ""],
+    ["Ducere Construction Services", "General Contractor / Renovations", "", ""],
+    ["Design Core Construction", "Custom Homes / Remodeling", "", ""],
+    ["Horizon Construction & Renovations", "Builder / Remodeler", "", ""],
+    ["Valarda", "Residential Renovations", "", ""],
+    ["Pine Hill Remodeling", "Remodeling Contractor", "404-918-7606", "Decatur"],
+    ["Dymond Construction & Renovations", "General Contractor", "", ""],
+    ["Innovative Design + Build", "Design Build / Remodeling", "404-400-2406", ""],
+    ["1st Choice Custom Homes & Remodeling ATL", "General Contractor / Remodel", "678-640-2272", "Brookhaven"],
+    ["Sterling Works", "Kitchen/Bath Remodel", "404-992-4030", ""],
+    ["Atlanta Curb Appeal", "General Contractor / Remodeling", "770-778-1172", ""],
+    ["Copper Sky Design + Remodel", "Design Build / Renovation", "404-418-1342", ""],
+    ["VKY Renovation", "Remodeling / Construction", "470-926-2263", "Atlanta"],
+    ["Blue Juniper Construction", "General Contractor", "404-594-4469", ""],
+    ["The Hamlin Group", "Design Build / Construction", "770-674-1556", ""],
+    ["TrueWay Renovations", "Remodeling / General Contractor", "478-878-3929", "Tucker/Lilburn"],
+    ["Pinnacle Building Group", "Builder / Remodeling", "770-880-5466", ""],
+    ["Small Carpenters At Large (SCAL Home)", "Design Build / Remodeling", "404-688-7665", "Atlanta/Decatur"],
+    ["Ambiance Atlanta", "Remodeling / Construction", "404-787-8220", ""],
+    ["Alair Homes Decatur", "Custom Homes / Remodel", "678-215-3451", "Decatur"],
+    ["NewSong Renovations", "Renovations", "678-325-2436", "Atlanta"],
+    ["Nest Planning & Construction", "General Contractor", "404-293-6589", ""],
+    ["Dream Renovations", "Kitchen/Bath Remodel", "404-642-8640", ""],
+    ["Armogan Construction Group", "Custom Homes / Remodel", "404-662-3260", ""],
+    ["GreatHouse Remodeling", "Design Build / Remodel", "678-352-1035", ""],
+    ["Atlanta Renovations and Construction", "General Contractor", "404-573-0327", ""],
+    ["Master Home Remodelers", "Remodeling", "770-696-0623", ""],
+    ["Vered Renovations", "Residential Remodeling", "404-435-1518", "Decatur"],
+    ["Good Haus", "Design Build", "404-944-0625", "Decatur"],
+    ["LFP Partners LLC", "General Contractor / Remodeling", "678-476-3728", "Stone Mountain"],
+    ["TCW Homes", "Kitchen/Bath Remodel", "770-286-4034", "Tucker"],
+    ["J.M. Lee Construction Company", "Residential/Commercial Construction", "678-250-4114", "Decatur"],
+    ["EarthSky Builders", "Remodeling / General Contractor", "404-941-9220", "Decatur"],
+    ["HammerSmith", "Renovation Contractor", "404-377-1021", "Decatur"],
+    ["Nova BuildCon LLC", "Custom Homes/Remodeling", "678-302-5921", "Atlanta Metro"],
+    ["g3 Builders LLC", "General Contractor", "404-905-8364", "Atlanta Metro"],
+    ["Mega Construction", "New Builds/Renovations", "678-672-1919", "Atlanta Metro"],
+    ["KDO Kitchens & Remodeling", "Kitchen/Bath Remodeling", "", "Atlanta Metro"],
+    ["A&P Designers", "Remodeling/Design Build", "", "Atlanta Metro"],
+    ["All County First Property Management", "Property Management", "404-207-1500", "Decatur/Atlanta"],
+    ["Brick and Bloom Property Management LLC", "Property Management", "470-535-5708", "Decatur"],
+    ["Real Property Management Majestic", "Property Management", "470-563-1001", "Tucker/DeKalb"],
+    ["DHC Property Management", "Property Management", "678-786-2296", "Atlanta/DeKalb"],
+    ["Emerald Property Management", "Property Management", "470-766-0700", "Decatur"],
+    ["Bullock Management Group", "Property Management", "770-491-9349", "Tucker"],
+    ["M Squared Property Management", "Property Management", "678-213-9930", "Atlanta"],
+    ["LivingInTown Realty Group", "Property Management", "", "Atlanta"],
+    ["LINK Real Estate Group", "Multifamily Management", "", "Atlanta Metro"],
+    ["Rent Appeal", "Property Management", "404-901-1170", "Atlanta Metro"],
+    ["SERVPRO of NW DeKalb/Dunwoody/Brookhaven", "Restoration", "770-744-0963", "Brookhaven/DeKalb"],
+    ["Right-Now Restoration", "Restoration", "404-470-4682", "Metro Atlanta"],
+    ["Rescue Restoration", "Restoration", "404-726-0254", "Atlanta"],
+    ["Serenity Restoration", "Restoration", "678-648-1294", "Tucker"],
+    ["Rapid Dry LLC", "Restoration", "770-820-3356", "Scottdale/DeKalb"],
+    ["RestoPros of Southeast Atlanta", "Restoration", "470-613-6100", "Decatur"],
+    ["ASAP Restoration Inc.", "Restoration", "404-655-9415", "Metro Atlanta"],
+    ["Reynolds Restoration Group", "Restoration", "678-379-3745", "Stone Mountain"],
+    ["Reliable Restoration LLC", "Restoration/Rebuild", "678-968-8552", "Atlanta Metro"],
+    ["Fast-Paced Restoration", "Restoration", "404-737-0911", "Atlanta Metro"],
+    ["Abberly Onyx Apartment Homes", "Multifamily Community", "404-910-4914", "Decatur"],
+    ["Abberly Skye Apartment Homes", "Multifamily Community", "404-910-4858", "Decatur"],
+    ["Arden Vue Apartments", "Multifamily Community", "470-873-8786", "Decatur"],
+    ["Windsor Parkview Apartments", "Multifamily Community", "678-952-2244", "Chamblee"],
+    ["Willis Avondale Estates", "Multifamily Community", "855-944-6709", "Decatur/Avondale"],
+    ["Avondale Village", "Multifamily Community", "404-777-1822", "Decatur"],
+    ["Gardenside at The Villages of East Lake", "Multifamily Community", "404-377-5090", "East Atlanta"],
+    ["1133 on the Square", "Multifamily Community", "833-400-0948", "Decatur"],
+    ["The Hawkins Apartments", "New Construction Multifamily", "470-274-7088", "Chamblee"],
+    ["Summit Embry Hills", "Multifamily Community", "833-784-0845", "Doraville"],
+    ["Vela Park", "New Construction Apartments/Townhomes", "470-517-6282", "Decatur/East Lake"],
+    ["Edgewater Vista", "Multifamily Community", "404-383-6042", "Decatur"],
+    ["Bexley Chamblee", "Multifamily Community", "844-779-8747", "Chamblee"],
+    ["1086 on Montreal", "Multifamily Community", "404-296-8516", "Clarkston"],
+    ["Fortis Property Management", "Multifamily Management Company", "678-741-2835", "Atlanta"],
+    ["Kinstone Communities", "Multifamily Management Company", "770-952-8537", "Atlanta"],
+    ["Fogelman", "Multifamily Management Company", "", "Atlanta Market"]
+  ];
+  seed.forEach(function (r, i) {
+    sheet.appendRow(['seed-' + i, r[0], r[1], r[2], r[3], 'New', '']);
+  });
+}
+
+function seedScripts_(ss) {
+  const sheet = ss.getSheetByName('Scripts');
+  const seed = [
+    ["s1", "General Contractor Cold Call Opener", "General Contractors",
+      "Who handles your final cleaning before homeowner walkthroughs? I'm looking to become a reliable final-clean vendor for contractors in the Atlanta area."],
+    ["s2", "Contractor Intro Pitch", "Remodelers / Builders",
+      "I'm building a local final-clean subcontracting company. We help contractors deliver move-in-ready homes without pulling their crews away from construction."],
+    ["s3", "Property Manager Pitch", "Property Managers",
+      "We help you turn units faster between tenants by handling detailed cleaning and move-in readiness."],
+    ["s4", "Restoration Company Pitch", "Restoration Companies",
+      "We provide final cleaning support after repairs, helping your team deliver a finished property."],
+    ["s5", "Apartment Community Script", "Multifamily / Apartment Communities",
+      "Hi, I'm [Your Name] with [Company Name]. We provide insured final cleaning and make-ready services for apartment communities. We help maintenance teams turn units faster between residents by handling detailed cleaning, dust removal, and move-in preparation. Who handles your vendor approvals for turnover cleaning?"]
+  ];
+  seed.forEach(function (r) {
+    sheet.appendRow(r);
+  });
+}
+
+/* ================= HELPERS ================= */
+
+function getSheet_(name) {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  return ss.getSheetByName(name);
+}
+
+function sheetToObjects_(sheet) {
+  const values = sheet.getDataRange().getValues();
+  if (values.length < 2) return [];
+  const headers = values[0];
+  return values.slice(1)
+    .filter(function (r) { return r.join('') !== ''; })
+    .map(function (r) {
+      const obj = {};
+      headers.forEach(function (h, i) { obj[h] = r[i]; });
+      return obj;
+    });
+}
+
+function insertRow_(sheet, data) {
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  sheet.appendRow(headers.map(function (h) { return data[h] !== undefined ? data[h] : ''; }));
+}
+
+function updateRow_(sheet, idField, data) {
+  const values = sheet.getDataRange().getValues();
+  const headers = values[0];
+  const idCol = headers.indexOf(idField);
+  for (let i = 1; i < values.length; i++) {
+    if (String(values[i][idCol]) === String(data[idField])) {
+      headers.forEach(function (h, colIdx) {
+        if (data[h] !== undefined) sheet.getRange(i + 1, colIdx + 1).setValue(data[h]);
+      });
+      break;
+    }
+  }
+}
+
+function jsonOut_(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+}
