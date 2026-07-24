@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vendor Onboarding Packet</title>
+<style>
+  :root {
+    --ink:#1c2321; --ink-soft:#4a534f; --paper:#fbfaf6; --panel:#fff;
+    --line:#d8d3c4; --accent:#2f5d4f; --accent-soft:#e7efe9;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:40px 20px; background:var(--paper); color:var(--ink); font-family:Georgia,'Iowan Old Style',serif; line-height:1.45; }
+  .sheet { max-width:820px; margin:0 auto; background:var(--panel); border:1px solid var(--line); padding:48px 52px; }
+
+  /* Nav cards */
+  nav.dash-nav {
+    margin-bottom:34px;
+  }
+  nav.dash-nav .nav-label {
+    font-family:'Helvetica Neue',Arial,sans-serif; font-size:11px; text-transform:uppercase;
+    letter-spacing:1.5px; color:var(--ink-soft); margin-bottom:10px;
+  }
+  .card-grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));
+    gap:10px;
+  }
+  .card-grid a {
+    display:flex; flex-direction:column; justify-content:center;
+    text-decoration:none; color:var(--ink);
+    background:var(--accent-soft); border:1px solid var(--line); border-radius:6px;
+    padding:12px 14px; font-family:'Helvetica Neue',Arial,sans-serif;
+    transition:background .15s ease, border-color .15s ease;
+  }
+  .card-grid a:hover { background:#dcebe3; border-color:var(--accent); }
+  .card-grid a .card-title { font-size:13.5px; font-weight:700; color:var(--accent); }
+  .card-grid a .card-sub { font-size:11px; color:var(--ink-soft); margin-top:2px; }
+  .card-grid a.current { border-color:var(--accent); background:#dcebe3; cursor:default; }
+
+  header { border-bottom:3px solid var(--accent); padding-bottom:18px; margin-bottom:26px; }
+  header h1 { font-size:24px; margin:0; color:var(--accent); }
+  header .tag { font-family:'Helvetica Neue',Arial,sans-serif; font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--ink-soft); margin-top:6px; }
+
+  h2 { font-family:'Helvetica Neue',Arial,sans-serif; font-size:12px; text-transform:uppercase; letter-spacing:1.5px; color:var(--accent); border-bottom:1px solid var(--line); padding-bottom:6px; margin:32px 0 16px; }
+  h2:first-of-type { margin-top:0; }
+
+  .cover {
+    text-align:center; padding:30px 10px 20px; border-bottom:1px solid var(--line); margin-bottom:26px;
+  }
+  .cover .biz-input {
+    font-family:Georgia,serif; font-size:22px; font-weight:700; text-align:center; color:var(--accent);
+    border:none; border-bottom:2px solid var(--line); background:transparent; padding:6px; width:80%;
+  }
+  .cover .biz-input:focus { outline:none; border-bottom-color:var(--accent); background:var(--accent-soft); }
+  .cover .subtitle { font-family:'Helvetica Neue',Arial,sans-serif; font-size:12px; text-transform:uppercase; letter-spacing:1.2px; color:var(--ink-soft); margin-top:10px; }
+  .cover .tagline { font-size:15px; color:var(--ink-soft); margin-top:6px; font-style:italic; }
+
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px 24px; margin-bottom:16px; }
+  .field { display:flex; flex-direction:column; gap:4px; }
+  .field.full { grid-column:1/-1; }
+  label { font-family:'Helvetica Neue',Arial,sans-serif; font-size:11px; text-transform:uppercase; letter-spacing:.6px; color:var(--ink-soft); }
+  input[type=text], input[type=email], input[type=tel] {
+    font-family:inherit; font-size:15px; color:var(--ink); border:none; border-bottom:1px solid var(--line);
+    background:transparent; padding:5px 2px; width:100%;
+  }
+  input:focus { outline:none; border-bottom:1.5px solid var(--accent); background:var(--accent-soft); }
+
+  ul.plain { margin:8px 0; padding-left:20px; }
+  ul.plain li { margin-bottom:4px; }
+
+  .checklist { display:grid; grid-template-columns:1fr 1fr; gap:8px 20px; font-family:'Helvetica Neue',Arial,sans-serif; font-size:14px; }
+  .checklist label { display:flex; align-items:center; gap:8px; text-transform:none; letter-spacing:0; font-size:14px; color:var(--ink); cursor:pointer; }
+  input[type=checkbox] { width:15px; height:15px; accent-color:var(--accent); cursor:pointer; }
+
+  .checkline { font-family:'Helvetica Neue',Arial,sans-serif; font-size:14.5px; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+
+  .steps { counter-reset:step; list-style:none; padding:0; margin:0; }
+  .steps li { counter-increment:step; position:relative; padding-left:34px; margin-bottom:10px; font-size:15px; }
+  .steps li::before {
+    content:counter(step); position:absolute; left:0; top:0; width:24px; height:24px;
+    background:var(--accent); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-family:'Helvetica Neue',Arial,sans-serif; font-size:12px; font-weight:700;
+  }
+
+  .actions { margin-top:40px; display:flex; gap:14px; align-items:center; flex-wrap:wrap; border-top:2px solid var(--accent); padding-top:24px; }
+  button { font-family:'Helvetica Neue',Arial,sans-serif; font-size:14px; font-weight:600; letter-spacing:.3px; padding:13px 26px; border:none; border-radius:3px; cursor:pointer; }
+  #submitBtn { background:var(--accent); color:#fff; }
+  #submitBtn:hover { background:#234a3f; }
+  #printBtn { background:transparent; color:var(--accent); border:1.5px solid var(--accent); }
+  #printBtn:hover { background:var(--accent-soft); }
+  .status { font-family:'Helvetica Neue',Arial,sans-serif; font-size:12.5px; color:var(--ink-soft); }
+  .required-note { font-family:'Helvetica Neue',Arial,sans-serif; font-size:11.5px; color:var(--ink-soft); margin-top:6px; }
+
+  @media (max-width:640px) {
+    .sheet { padding:30px 22px; }
+    .grid, .checklist { grid-template-columns:1fr; }
+  }
+  @media print {
+    body { padding:0; background:#fff; }
+    .sheet { border:none; }
+    .actions, nav.dash-nav, .required-note { display:none; }
+  }
+</style>
+</head>
+<body>
+<div class="sheet" id="onboardForm">
+
+  <nav class="dash-nav">
+    <div class="nav-label">PCDASH</div>
+    <div class="card-grid">
+      <a href="index.html"><span class="card-title">🏠 Dashboard</span><span class="card-sub">Main hub</span></a>
+      <a href="bidsheet.html"><span class="card-title">Bid Sheet</span><span class="card-sub">Project bid form</span></a>
+      <a href="playbook.html"><span class="card-title">Playbook</span><span class="card-sub">First 5 jobs</span></a>
+      <a href="postconstruction.html"><span class="card-title">Starter Package</span><span class="card-sub">Pricing &amp; checklists</span></a>
+      <a href="vendoroutreach.html"><span class="card-title">Vendor Outreach</span><span class="card-sub">Intro email</span></a>
+      <a href="vendoroutreachatl.html"><span class="card-title">Outreach — ATL</span><span class="card-sub">Atlanta variant</span></a>
+      <a href="vendorfollowup.html"><span class="card-title">Vendor Follow-Up</span><span class="card-sub">Follow-up email</span></a>
+      <a href="followup2week.html"><span class="card-title">2-Week Follow-Up</span><span class="card-sub">Leave-info email</span></a>
+      <a class="current" href="#"><span class="card-title">Vendor Onboarding</span><span class="card-sub">You are here</span></a>
+    </div>
+  </nav>
+
+  <div class="cover">
+    <input type="text" class="biz-input" id="businessName" placeholder="[BUSINESS NAME]">
+    <div class="subtitle">Contractor Vendor Packet</div>
+    <div class="tagline">Professional Post-Construction Final Cleaning Services</div>
+  </div>
+
+  <h2>Prepared For</h2>
+  <div class="field full">
+    <label for="preparedFor">Contractor / Company</label>
+    <input type="text" id="preparedFor" name="Prepared For">
+  </div>
+
+  <h2>Company Information</h2>
+  <div class="grid">
+    <div class="field"><label for="bizName2">Business Name</label><input type="text" id="bizName2" name="Business Name"></div>
+    <div class="field"><label>Owner</label><input type="text" name="Owner" value="Saneca Mack"></div>
+    <div class="field"><label>Service Area</label><input type="text" name="Service Area" value="Atlanta Metro Area"></div>
+    <div class="field full">
+      <label>Services</label>
+      <ul class="plain">
+        <li>Construction final cleaning</li>
+        <li>Renovation cleanup</li>
+        <li>Move-in preparation</li>
+        <li>Detailed property cleaning</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Required Documents Checklist</h2>
+  <div class="checklist">
+    <label><input type="checkbox" name="Docs Checklist" value="Certificate of Insurance"> Certificate of Insurance</label>
+    <label><input type="checkbox" name="Docs Checklist" value="W-9"> W-9</label>
+    <label><input type="checkbox" name="Docs Checklist" value="Business License (if required)"> Business License (if required)</label>
+    <label><input type="checkbox" name="Docs Checklist" value="Service Agreement"> Service Agreement</label>
+    <label><input type="checkbox" name="Docs Checklist" value="Pricing Sheet"> Pricing Sheet</label>
+    <label><input type="checkbox" name="Docs Checklist" value="Safety Procedures"> Safety Procedures</label>
+    <label><input type="checkbox" name="Docs Checklist" value="Contact Information"> Contact Information</label>
+  </div>
+
+  <h2>Why Partner With Us</h2>
+  <div class="checkline">✓ Insured operations</div>
+  <div class="checkline">✓ Professional communication</div>
+  <div class="checkline">✓ Detailed quality control</div>
+  <div class="checkline">✓ Reliable scheduling</div>
+  <div class="checkline">✓ Contractor-focused service</div>
+
+  <h2>Our Process</h2>
+  <ol class="steps">
+    <li>Receive project details</li>
+    <li>Provide written estimate</li>
+    <li>Schedule cleaning crew</li>
+    <li>Complete quality inspection</li>
+    <li>Deliver finished property</li>
+  </ol>
+
+  <h2>Contact</h2>
+  <div class="grid">
+    <div class="field"><label>Name</label><input type="text" name="Contact Name" value="Saneca Mack"></div>
+    <div class="field"><label>Phone</label><input type="tel" id="contactPhone" name="Contact Phone"></div>
+    <div class="field full"><label>Email</label><input type="email" id="contactEmail" name="Contact Email"></div>
+  </div>
+
+  <div class="actions">
+    <div class="field" style="min-width:220px;">
+      <label for="toEmail">Send To (email)</label>
+      <input type="email" id="toEmail" placeholder="contractor@example.com">
+    </div>
+    <button type="button" id="submitBtn">Send Packet via Email</button>
+    <button type="button" id="printBtn">Print / Save as PDF</button>
+    <span class="status" id="statusMsg"></span>
+  </div>
+  <p class="required-note">Enter a recipient, then "Send Packet via Email" opens your email app with this document pre-filled.</p>
+</div>
+
+<script>
+  function val(name) {
+    const el = document.querySelector(`[name="${name}"]`);
+    return el ? el.value.trim() : '';
+  }
+  function checkedList(name) {
+    return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(el => el.value);
+  }
+
+  document.getElementById('businessName').addEventListener('input', (e) => {
+    document.getElementById('bizName2').value = e.target.value;
+  });
+  document.getElementById('bizName2').addEventListener('input', (e) => {
+    document.getElementById('businessName').value = e.target.value;
+  });
+
+  function collectData() {
+    const biz = document.getElementById('businessName').value.trim() || '[BUSINESS NAME]';
+    const lines = [];
+    lines.push(`${biz}`);
+    lines.push("CONTRACTOR VENDOR PACKET");
+    lines.push("Professional Post-Construction Final Cleaning Services");
+    lines.push("");
+    lines.push(`Prepared for: ${val('Prepared For')}`);
+    lines.push("");
+    lines.push("COMPANY INFORMATION");
+    lines.push(`Business Name: ${biz}`);
+    lines.push(`Owner: ${val('Owner')}`);
+    lines.push(`Service Area: ${val('Service Area')}`);
+    lines.push("Services: Construction final cleaning, Renovation cleanup, Move-in preparation, Detailed property cleaning");
+    lines.push("");
+    lines.push("REQUIRED DOCUMENTS CHECKLIST");
+    const docs = checkedList('Docs Checklist');
+    lines.push(docs.length ? docs.join(', ') : '(none checked)');
+    lines.push("");
+    lines.push("WHY PARTNER WITH US");
+    lines.push("Insured operations, Professional communication, Detailed quality control, Reliable scheduling, Contractor-focused service");
+    lines.push("");
+    lines.push("OUR PROCESS");
+    lines.push("1. Receive project details");
+    lines.push("2. Provide written estimate");
+    lines.push("3. Schedule cleaning crew");
+    lines.push("4. Complete quality inspection");
+    lines.push("5. Deliver finished property");
+    lines.push("");
+    lines.push("CONTACT");
+    lines.push(`Name: ${val('Contact Name')}`);
+    lines.push(`Phone: ${val('Contact Phone')}`);
+    lines.push(`Email: ${val('Contact Email')}`);
+    return lines.join("\n");
+  }
+
+  document.getElementById('submitBtn').addEventListener('click', () => {
+    const to = document.getElementById('toEmail').value.trim();
+    if (!to) {
+      document.getElementById('statusMsg').textContent = "Enter a recipient email first.";
+      return;
+    }
+    const biz = document.getElementById('businessName').value.trim() || 'Saneca';
+    const body = collectData();
+    const subject = `${biz} — Contractor Vendor Packet`;
+    const mailto = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailto;
+    document.getElementById('statusMsg').textContent = "Opening your email app…";
+  });
+
+  document.getElementById('printBtn').addEventListener('click', () => window.print());
+</script>
+</body>
+</html>
