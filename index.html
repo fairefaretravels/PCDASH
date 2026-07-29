@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Site Ops — Final Clean Division</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#19181a;
+    --panel:#231f1c;
+    --panel-2:#2a2521;
+    --paper:#ece5d3;
+    --paper-2:#e2d9c2;
+    --orange:#e8590c;
+    --orange-dim:#a8420c;
+    --yellow:#f0b429;
+    --blue:#4c7f9e;
+    --green:#4f8a5b;
+    --red:#b23b3b;
+    --text:#f2ede2;
+    --text-dim:#b8ada0;
+    --text-dark:#221f1a;
+    --line:#3a332c;
+    --radius:3px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--ink);
+    background-image:
+      repeating-linear-gradient(45deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 12px);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+  }
+  .wrap{max-width:1000px;margin:0 auto;padding:18px 16px 60px;}
+
+  /* ---- header: clipboard ---- */
+  .clip{
+    position:relative;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:20px 22px 16px;
+    margin-bottom:14px;
+    overflow:hidden;
+  }
+  .clip::before{
+    content:"";
+    position:absolute; top:0; left:0; right:0; height:5px;
+    background:repeating-linear-gradient(90deg,var(--yellow) 0 16px,var(--ink) 16px 32px);
+    opacity:.85;
+  }
+  .clip-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:6px;}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;color:var(--orange);text-transform:uppercase;}
+  h1{
+    font-family:'Oswald',sans-serif;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    font-size:28px;
+    margin:2px 0 0;
+    color:var(--text);
+  }
+  .sub{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-dim);margin-top:6px;}
+
+  /* ---- tabs ---- */
+  .tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
+  .tab-btn{
+    font-family:'Oswald',sans-serif;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    font-size:13px;
+    font-weight:600;
+    padding:10px 16px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-bottom:3px solid var(--line);
+    color:var(--text-dim);
+    cursor:pointer;
+    border-radius:var(--radius) var(--radius) 0 0;
+    transition:all .12s ease;
+  }
+  .tab-btn:hover{color:var(--text);border-color:#4a423a;}
+  .tab-btn.active{
+    color:var(--ink);
+    background:var(--orange);
+    border-color:var(--orange);
+    border-bottom:3px solid var(--yellow);
+  }
+  .panel{display:none;}
+  .panel.active{display:block;animation:fade .15s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(2px);}to{opacity:1;transform:none;}}
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:16px;
+    margin-bottom:14px;
+  }
+
+  /* ===== CALL LIST ===== */
+  .stat-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+  .stat{
+    flex:1 1 90px;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:9px 10px;
+    text-align:center;
+  }
+  .stat b{display:block;font-family:'Oswald',sans-serif;font-size:20px;color:var(--yellow);}
+  .stat span{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.06em;color:var(--text-dim);text-transform:uppercase;}
+
+  .toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;}
+  input[type=text], input[type=search], select, textarea{
+    font-family:'Inter',sans-serif;
+    background:var(--paper);
+    color:var(--text-dark);
+    border:1px solid #cfc6ae;
+    border-radius:var(--radius);
+    padding:8px 10px;
+    font-size:13px;
+  }
+  select{font-family:'IBM Plex Mono',monospace;font-size:12px;}
+  .toolbar input[type=search]{flex:1;min-width:160px;}
+  button{
+    font-family:'Oswald',sans-serif;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    font-weight:600;
+    font-size:12.5px;
+    background:var(--orange);
+    color:var(--ink);
+    border:none;
+    border-radius:var(--radius);
+    padding:9px 14px;
+    cursor:pointer;
+    transition:background .12s;
+  }
+  button:hover{background:#ff6a1e;}
+  button.ghost{background:transparent;border:1px solid var(--line);color:var(--text-dim);}
+  button.ghost:hover{color:var(--text);border-color:#5a5148;}
+  button.small{padding:5px 9px;font-size:11px;}
+
+  .lead-row{
+    background:var(--paper);
+    color:var(--text-dark);
+    border-radius:var(--radius);
+    padding:11px 12px;
+    margin-bottom:7px;
+    display:grid;
+    grid-template-columns:26px 1fr auto;
+    gap:4px 10px;
+    align-items:center;
+    border-left:4px solid var(--line);
+    position:relative;
+  }
+  .lead-row[data-status="New"]{border-left-color:#9a9284;}
+  .lead-row[data-status="Called"]{border-left-color:var(--blue);}
+  .lead-row[data-status="No Answer"]{border-left-color:#c98a2c;}
+  .lead-row[data-status="Interested"]{border-left-color:var(--green);}
+  .lead-row[data-status="Not Now"]{border-left-color:#8a7f6e;}
+  .lead-row[data-status="Won"]{border-left-color:var(--green);background:#e2ecdc;}
+  .lead-row[data-status="Lost"]{border-left-color:var(--red);opacity:.65;}
+  .lead-num{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#8a8072;text-align:right;}
+  .lead-main{min-width:0;}
+  .lead-name{font-family:'Oswald',sans-serif;font-weight:600;font-size:14.5px;text-transform:uppercase;letter-spacing:.01em;}
+  .lead-meta{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6b6255;margin-top:2px;}
+  .lead-meta a{color:var(--orange-dim);text-decoration:none;}
+  .lead-actions{display:flex;gap:6px;align-items:center;}
+  .lead-actions select{padding:5px 6px;font-size:10.5px;}
+
+  /* ===== TEAM RADIO ===== */
+  .radio-unit{
+    background:linear-gradient(180deg,#2e2823,#221e1a);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:18px;
+    position:relative;
+  }
+  .radio-face{
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:14px;
+    align-items:center;
+    margin-bottom:14px;
+  }
+  .grille{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:5px;
+    width:120px;
+  }
+  .grille i{display:block;width:100%;padding-top:100%;border-radius:50%;background:#171412;border:1px solid #3a332c;}
+  .lcd{
+    background:#0f2b1c;
+    border:2px solid #08160e;
+    border-radius:4px;
+    padding:10px 14px;
+    text-align:right;
+    box-shadow:inset 0 0 12px rgba(0,0,0,.6);
+  }
+  .lcd .time{font-family:'IBM Plex Mono',monospace;font-size:30px;color:#5df58a;letter-spacing:.04em;text-shadow:0 0 6px rgba(93,245,138,.5);}
+  .lcd .date{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#3fae66;letter-spacing:.1em;text-transform:uppercase;}
+  .channel-strip{
+    display:flex;align-items:center;justify-content:space-between;
+    background:#171412;border:1px solid #3a332c;border-radius:4px;
+    padding:7px 10px;margin-bottom:10px;
+    font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);
+  }
+  .channel-strip .dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;margin-right:6px;box-shadow:0 0 5px var(--green);}
+  .handle-setup{display:flex;gap:8px;margin-bottom:10px;}
+  .handle-setup input{flex:1;}
+  .log{
+    background:#100e0c;
+    border:1px solid #3a332c;
+    border-radius:4px;
+    height:320px;
+    overflow-y:auto;
+    padding:10px 12px;
+    display:flex;flex-direction:column;gap:8px;
+  }
+  .msg{background:#1c1815;border-radius:3px;padding:7px 10px;border-left:3px solid var(--orange);}
+  .msg .who{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--yellow);text-transform:uppercase;letter-spacing:.06em;}
+  .msg .when{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#665f56;margin-left:8px;}
+  .msg .txt{font-size:13.5px;color:var(--text);margin-top:3px;line-height:1.4;}
+  .transmit-row{display:flex;gap:8px;margin-top:10px;}
+  .transmit-row input{flex:1;font-family:'Inter',sans-serif;}
+  .transmit-row button{background:var(--orange);}
+  .empty-log{color:#5a5248;font-family:'IBM Plex Mono',monospace;font-size:12px;text-align:center;margin-top:40px;}
+
+  /* ===== VENDOR FILES ===== */
+  .dropzone{
+    border:2px dashed #4a4238;
+    border-radius:var(--radius);
+    padding:26px 16px;
+    text-align:center;
+    cursor:pointer;
+    transition:border-color .12s, background .12s;
+    margin-bottom:14px;
+  }
+  .dropzone:hover{border-color:var(--orange);background:rgba(232,89,12,.05);}
+  .dropzone .stencil{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.08em;font-size:14px;color:var(--text-dim);}
+  .dropzone .small{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6b6459;margin-top:4px;}
+  .file-row{
+    display:flex;align-items:center;gap:12px;
+    background:var(--paper);color:var(--text-dark);
+    border-radius:var(--radius);
+    padding:10px 12px;margin-bottom:7px;
+  }
+  .file-icon{
+    width:34px;height:34px;border-radius:4px;background:var(--panel-2);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--yellow);font-weight:600;flex-shrink:0;
+  }
+  .file-main{flex:1;min-width:0;}
+  .file-name{font-family:'Oswald',sans-serif;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .file-meta{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#6b6255;}
+
+  /* ===== SCRIPTS ===== */
+  .script-card{
+    background:var(--paper);color:var(--text-dark);
+    border-radius:var(--radius);
+    padding:14px 16px;margin-bottom:10px;
+    border-left:4px solid var(--blue);
+  }
+  .script-title{font-family:'Oswald',sans-serif;font-size:15px;font-weight:600;text-transform:uppercase;letter-spacing:.02em;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .script-body{font-size:13.5px;line-height:1.55;margin-top:8px;font-style:italic;color:#3a352c;}
+  .script-tag{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;}
+
+  /* ===== MANPOWER ===== */
+  .team-card{
+    background:var(--paper);color:var(--text-dark);
+    border-radius:var(--radius);
+    padding:0;margin-bottom:12px;
+    overflow:hidden;
+    border-left:4px solid var(--orange);
+  }
+  .team-head{
+    background:var(--paper-2);
+    padding:10px 12px;
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;
+  }
+  .team-name{font-family:'Oswald',sans-serif;font-weight:700;font-size:15px;text-transform:uppercase;letter-spacing:.02em;}
+  .team-type{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--orange-dim);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
+  .team-count{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6b6255;}
+  .emp-row{
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:4px 10px;
+    align-items:center;
+    padding:9px 12px;
+    border-top:1px solid #d9d0b8;
+  }
+  .emp-row[data-role="Lead"]{background:#f2ecd9;}
+  .emp-main{min-width:0;}
+  .emp-name{font-family:'Oswald',sans-serif;font-weight:600;font-size:13.5px;}
+  .emp-name .role-badge{
+    font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.05em;text-transform:uppercase;
+    background:var(--orange);color:var(--ink);border-radius:2px;padding:2px 5px;margin-left:6px;vertical-align:middle;
+  }
+  .emp-row[data-role="Helper"] .role-badge{background:var(--blue);color:#fff;}
+  .emp-meta{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#6b6255;margin-top:2px;}
+  .emp-tags{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:flex-end;}
+  .rank-badge{
+    font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;
+    border-radius:2px;padding:3px 7px;
+  }
+  .rank-badge[data-rank="Strong"]{background:var(--green);color:#fff;}
+  .rank-badge[data-rank="Average"]{background:#c9bf9e;color:var(--text-dark);}
+  .rank-badge[data-rank="Weak"]{background:var(--red);color:#fff;}
+  .ot-badge{
+    font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;
+    border:1px solid var(--yellow);color:var(--orange-dim);border-radius:2px;padding:3px 7px;
+  }
+  .emp-del{background:transparent;border:1px solid #cfc6ae;color:#8a8072;padding:4px 7px;font-size:10px;}
+  .emp-del:hover{border-color:var(--red);color:var(--red);}
+
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+  .form-grid textarea{grid-column:1/-1;min-height:70px;font-family:'Inter',sans-serif;resize:vertical;}
+  .form-grid .full{grid-column:1/-1;}
+  .form-grid label.inline{display:flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);background:var(--panel-2);border:1px solid var(--line);border-radius:var(--radius);padding:8px 10px;}
+  @media(max-width:560px){.form-grid{grid-template-columns:1fr;}.radio-face{grid-template-columns:1fr;}.grille{width:90px;}}
+  .toast{
+    position:fixed;bottom:18px;left:50%;transform:translateX(-50%);
+    background:var(--yellow);color:var(--text-dark);
+    font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;
+    padding:9px 16px;border-radius:var(--radius);
+    opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;
+    z-index:50;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-4px);}
+  .muted{color:var(--text-dim);font-family:'IBM Plex Mono',monospace;font-size:11.5px;}
+
+  /* ===== GPS ===== */
+  .gps-row{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
+    background:var(--paper);color:var(--text-dark);border-radius:var(--radius);padding:11px 12px;margin-bottom:7px;border-left:4px solid var(--green);
+  }
+  .gps-main{min-width:0;}
+  .gps-name{font-family:'Oswald',sans-serif;font-weight:600;font-size:14px;text-transform:uppercase;}
+  .gps-meta{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#6b6255;margin-top:2px;}
+  .gps-stale{border-left-color:#a89f8a;opacity:.7;}
+  .gps-row a.mapbtn{
+    font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.04em;font-weight:600;font-size:11.5px;
+    background:var(--orange);color:var(--ink);border-radius:var(--radius);padding:7px 11px;text-decoration:none;
+  }
+
+  /* ===== SITE MENU ===== */
+  .menu-btn{
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    color:var(--text);
+    padding:9px 11px;
+    border-radius:var(--radius);
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+    justify-content:center;
+    align-items:center;
+    cursor:pointer;
+  }
+  .menu-btn span{display:block;width:18px;height:2px;background:var(--text-dim);border-radius:1px;}
+  .menu-btn:hover span{background:var(--orange);}
+  .menu-overlay{
+    position:fixed;inset:0;
+    background:rgba(10,9,8,.7);
+    display:none;
+    z-index:100;
+    align-items:flex-start;
+    justify-content:flex-end;
+  }
+  .menu-overlay.show{display:flex;}
+  .menu-panel{
+    width:min(300px,84vw);
+    height:100%;
+    background:var(--panel);
+    border-left:1px solid var(--line);
+    padding:18px 16px;
+    overflow-y:auto;
+    animation:slideIn .16s ease;
+  }
+  @keyframes slideIn{from{transform:translateX(16px);opacity:0;}to{transform:none;opacity:1;}}
+  .menu-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .menu-title{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.06em;font-size:13px;color:var(--text-dim);}
+  .menu-close{background:transparent;border:1px solid var(--line);color:var(--text-dim);padding:5px 9px;font-size:14px;}
+  .menu-close:hover{color:var(--text);border-color:#5a5148;}
+  .menu-group-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--orange-dim);margin:14px 0 6px;}
+  .menu-link{
+    display:flex;flex-direction:column;gap:2px;
+    padding:10px 11px;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    color:var(--text);
+    text-decoration:none;
+    margin-bottom:7px;
+  }
+  .menu-link:hover{border-color:var(--orange);}
+  .menu-link.current{border-left:3px solid var(--orange);background:#332c25;}
+  .menu-link b{font-family:'Oswald',sans-serif;font-size:13.5px;text-transform:uppercase;letter-spacing:.01em;}
+  .menu-link small{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="clip">
+    <div class="clip-top">
+      <div>
+        <div class="eyebrow">Final Clean Division — Atlanta Metro</div>
+        <h1>Site Ops Board</h1>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="sub" id="statusLine">loading…</div>
+        <div class="menu-btn" id="menuBtn" aria-label="Open menu"><span></span><span></span><span></span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="menu-overlay" id="menuOverlay">
+    <div class="menu-panel">
+      <div class="menu-head">
+        <div class="menu-title">All Tools</div>
+        <button class="menu-close" id="menuCloseBtn">✕</button>
+      </div>
+
+      <div class="menu-group-label">Ops Board</div>
+      <a class="menu-link current" href="index.html"><b>Site Ops Board</b><small>Call list · manpower · GPS · radio · files · scripts</small></a>
+
+      <div class="menu-group-label">Crew</div>
+      <a class="menu-link" href="employee.html"><b>Crew App</b><small>employee.html — clock in/out, walkie, location</small></a>
+
+      <div class="menu-group-label">Sales &amp; Leads</div>
+      <a class="menu-link" href="bidsheet.html"><b>Bid Sheet</b><small>bidsheet.html</small></a>
+      <a class="menu-link" href="followup2week.html"><b>2-Week Follow-Up</b><small>followup2week.html</small></a>
+      <a class="menu-link" href="postconstruction.html"><b>Post-Construction</b><small>postconstruction.html</small></a>
+
+      <div class="menu-group-label">Vendors</div>
+      <a class="menu-link" href="vendoronboarding.html"><b>Vendor Onboarding</b><small>vendoronboarding.html</small></a>
+      <a class="menu-link" href="vendorfollowup.html"><b>Vendor Follow-Up</b><small>vendorfollowup.html</small></a>
+      <a class="menu-link" href="vendoroutreach.html"><b>Vendor Outreach</b><small>vendoroutreach.html</small></a>
+      <a class="menu-link" href="vendoroutreachatl.html"><b>Vendor Outreach ATL</b><small>vendoroutreachatl.html</small></a>
+
+      <div class="menu-group-label">Reference</div>
+      <a class="menu-link" href="playbook.html"><b>Playbook</b><small>playbook.html</small></a>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="calls">Call List</button>
+    <button class="tab-btn" data-tab="manpower">Manpower</button>
+    <button class="tab-btn" data-tab="gps">GPS</button>
+    <button class="tab-btn" data-tab="radio">Team Radio</button>
+    <button class="tab-btn" data-tab="files">Vendor Files</button>
+    <button class="tab-btn" data-tab="scripts">Scripts</button>
+  </div>
+
+  <!-- ================= CALL LIST ================= -->
+  <div class="panel active" id="panel-calls">
+    <div class="card">
+      <div class="stat-row" id="statRow"></div>
+      <div class="toolbar">
+        <input type="search" id="leadSearch" placeholder="Search company, area, type…">
+        <select id="statusFilter">
+          <option value="">All statuses</option>
+          <option>New</option><option>Called</option><option>No Answer</option>
+          <option>Interested</option><option>Not Now</option><option>Won</option><option>Lost</option>
+        </select>
+        <button class="ghost small" id="addLeadBtn">+ Add lead</button>
+      </div>
+      <div id="addLeadForm" style="display:none;" class="card" >
+        <div class="form-grid">
+          <input type="text" id="nlCompany" placeholder="Company name">
+          <input type="text" id="nlType" placeholder="Type (e.g. General Contractor)">
+          <input type="text" id="nlPhone" placeholder="Phone">
+          <input type="text" id="nlArea" placeholder="Area">
+        </div>
+        <button id="saveLeadBtn">Save lead</button>
+        <button class="ghost" id="cancelLeadBtn">Cancel</button>
+      </div>
+      <div id="leadList"></div>
+    </div>
+  </div>
+
+  <!-- ================= MANPOWER ================= -->
+  <div class="panel" id="panel-manpower">
+    <div class="card">
+      <div class="stat-row" id="crewStatRow"></div>
+      <div class="toolbar">
+        <input type="search" id="crewSearch" placeholder="Search name, team, task…">
+        <select id="crewTeamFilter"><option value="">All teams</option></select>
+        <button class="ghost small" id="addCrewBtn">+ Add employee</button>
+        <button class="ghost small" id="clearDemoBtn">Clear demo data</button>
+      </div>
+      <div id="addCrewForm" style="display:none;" class="card">
+        <div class="form-grid">
+          <input type="text" id="ceName" placeholder="Full name">
+          <select id="ceRole">
+            <option value="Lead">Lead / Foreman</option>
+            <option value="Helper">Helper / Technician</option>
+          </select>
+          <input type="text" id="ceTeam" placeholder="Team name (e.g. Wiring Team)" list="teamNameList">
+          <datalist id="teamNameList"></datalist>
+          <input type="text" id="ceTeamType" placeholder="Team type (e.g. Termination, Wiring, Conduit Bending)">
+          <input type="text" id="ceTask" placeholder="Specific task (e.g. pipe outside, pipe inside)" class="full">
+          <input type="text" id="ceStrength" placeholder="Strength / what they're good at" class="full">
+          <select id="ceRank">
+            <option value="Strong">Strongest / top performer</option>
+            <option value="Average">Average</option>
+            <option value="Weak">Weakest link</option>
+          </select>
+          <label class="inline"><input type="checkbox" id="ceOT"> Willing to work overtime</label>
+        </div>
+        <button id="saveCrewBtn">Save employee</button>
+        <button class="ghost" id="cancelCrewBtn">Cancel</button>
+      </div>
+      <div id="crewEmpty" class="muted" style="display:none;padding:10px 0;">No employees added yet. Start building the list above.</div>
+      <div id="crewList"></div>
+    </div>
+  </div>
+
+  <!-- ================= GPS ================= -->
+  <div class="panel" id="panel-gps">
+    <div class="card">
+      <div class="stat-row" id="gpsStatRow"></div>
+      <div class="muted" style="margin-bottom:10px;">Live positions only come through while a crew member has the Crew App open and location sharing turned on. Closed phones or apps won't report in.</div>
+      <div id="gpsEmpty" class="muted" style="display:none;padding:10px 0;">No one is currently sharing their location.</div>
+      <div id="gpsList"></div>
+    </div>
+  </div>
+
+  <!-- ================= TEAM RADIO ================= -->
+  <div class="panel" id="panel-radio">
+    <div class="radio-unit">
+      <div class="radio-face">
+        <div class="grille"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="lcd">
+          <div class="time" id="clockTime">--:--</div>
+          <div class="date" id="clockDate">---</div>
+        </div>
+      </div>
+      <div class="channel-strip">
+        <span><span class="dot"></span>CH. 1 — CREW CHAT</span>
+        <span id="handleDisplay">no handle set</span>
+      </div>
+
+      <div id="handleSetup" class="handle-setup">
+        <input type="text" id="handleInput" placeholder="Set your radio handle (your name)" maxlength="24">
+        <button id="setHandleBtn">Set</button>
+      </div>
+
+      <div class="log" id="chatLog"><div class="empty-log">Loading transmissions…</div></div>
+
+      <div class="transmit-row">
+        <input type="text" id="chatInput" placeholder="Type a message…" maxlength="500">
+        <button id="sendChatBtn">Transmit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= VENDOR FILES ================= -->
+  <div class="panel" id="panel-files">
+    <div class="card">
+      <div class="dropzone" id="dropzone">
+        <div class="stencil">📎 Click to upload a vendor file</div>
+        <div class="small">COIs, price sheets, W-9s, agreements — under 3.5MB each</div>
+        <input type="file" id="fileInput" style="display:none;">
+      </div>
+      <div class="muted" id="filesEmpty" style="display:none;">No vendor files yet. Upload a COI, price sheet, or agreement above.</div>
+      <div id="fileList"></div>
+    </div>
+  </div>
+
+  <!-- ================= SCRIPTS ================= -->
+  <div class="panel" id="panel-scripts">
+    <div class="card">
+      <div class="toolbar">
+        <span class="muted">Tap a script to copy it before your next call.</span>
+        <button class="ghost small" id="addScriptBtn">+ Add script</button>
+      </div>
+      <div id="addScriptForm" style="display:none;" class="card">
+        <div class="form-grid">
+          <input type="text" id="nsTitle" placeholder="Script title">
+          <input type="text" id="nsTag" placeholder="Tag (e.g. Restoration Companies)">
+          <textarea id="nsBody" placeholder="Script text…"></textarea>
+        </div>
+        <button id="saveScriptBtn">Save script</button>
+        <button class="ghost" id="cancelScriptBtn">Cancel</button>
+      </div>
+      <div id="scriptList"></div>
+    </div>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= SEED DATA ================= */
+const LEADS_SEED = [
+["Craftworks Construction","Custom Homes / Remodeling","",""],
+["Campbell Construction Ltd","General Contractor / Custom Homes","",""],
+["Northside Builders","Custom Home Builder","",""],
+["Ducere Construction Services","General Contractor / Renovations","",""],
+["Design Core Construction","Custom Homes / Remodeling","",""],
+["Horizon Construction & Renovations","Builder / Remodeler","",""],
+["Valarda","Residential Renovations","",""],
+["Pine Hill Remodeling","Remodeling Contractor","404-918-7606","Decatur"],
+["Dymond Construction & Renovations","General Contractor","",""],
+["Innovative Design + Build","Design Build / Remodeling","404-400-2406",""],
+["1st Choice Custom Homes & Remodeling ATL","General Contractor / Remodel","678-640-2272","Brookhaven"],
+["Sterling Works","Kitchen/Bath Remodel","404-992-4030",""],
+["Atlanta Curb Appeal","General Contractor / Remodeling","770-778-1172",""],
+["Copper Sky Design + Remodel","Design Build / Renovation","404-418-1342",""],
+["VKY Renovation","Remodeling / Construction","470-926-2263","Atlanta"],
+["Blue Juniper Construction","General Contractor","404-594-4469",""],
+["The Hamlin Group","Design Build / Construction","770-674-1556",""],
+["TrueWay Renovations","Remodeling / General Contractor","478-878-3929","Tucker/Lilburn"],
+["Pinnacle Building Group","Builder / Remodeling","770-880-5466",""],
+["Small Carpenters At Large (SCAL Home)","Design Build / Remodeling","404-688-7665","Atlanta/Decatur"],
+["Ambiance Atlanta","Remodeling / Construction","404-787-8220",""],
+["Alair Homes Decatur","Custom Homes / Remodel","678-215-3451","Decatur"],
+["NewSong Renovations","Renovations","678-325-2436","Atlanta"],
+["Nest Planning & Construction","General Contractor","404-293-6589",""],
+["Dream Renovations","Kitchen/Bath Remodel","404-642-8640",""],
+["Armogan Construction Group","Custom Homes / Remodel","404-662-3260",""],
+["GreatHouse Remodeling","Design Build / Remodel","678-352-1035",""],
+["Atlanta Renovations and Construction","General Contractor","404-573-0327",""],
+["Master Home Remodelers","Remodeling","770-696-0623",""],
+["Vered Renovations","Residential Remodeling","404-435-1518","Decatur"],
+["Good Haus","Design Build","404-944-0625","Decatur"],
+["LFP Partners LLC","General Contractor / Remodeling","678-476-3728","Stone Mountain"],
+["TCW Homes","Kitchen/Bath Remodel","770-286-4034","Tucker"],
+["J.M. Lee Construction Company","Residential/Commercial Construction","678-250-4114","Decatur"],
+["EarthSky Builders","Remodeling / General Contractor","404-941-9220","Decatur"],
+["HammerSmith","Renovation Contractor","404-377-1021","Decatur"],
+["Nova BuildCon LLC","Custom Homes/Remodeling","678-302-5921","Atlanta Metro"],
+["g3 Builders LLC","General Contractor","404-905-8364","Atlanta Metro"],
+["Mega Construction","New Builds/Renovations","678-672-1919","Atlanta Metro"],
+["KDO Kitchens & Remodeling","Kitchen/Bath Remodeling","","Atlanta Metro"],
+["A&P Designers","Remodeling/Design Build","","Atlanta Metro"],
+["All County First Property Management","Property Management","404-207-1500","Decatur/Atlanta"],
+["Brick and Bloom Property Management LLC","Property Management","470-535-5708","Decatur"],
+["Real Property Management Majestic","Property Management","470-563-1001","Tucker/DeKalb"],
+["DHC Property Management","Property Management","678-786-2296","Atlanta/DeKalb"],
+["Emerald Property Management","Property Management","470-766-0700","Decatur"],
+["Bullock Management Group","Property Management","770-491-9349","Tucker"],
+["M Squared Property Management","Property Management","678-213-9930","Atlanta"],
+["LivingInTown Realty Group","Property Management","","Atlanta"],
+["LINK Real Estate Group","Multifamily Management","","Atlanta Metro"],
+["Rent Appeal","Property Management","404-901-1170","Atlanta Metro"],
+["SERVPRO of NW DeKalb/Dunwoody/Brookhaven","Restoration","770-744-0963","Brookhaven/DeKalb"],
+["Right-Now Restoration","Restoration","404-470-4682","Metro Atlanta"],
+["Rescue Restoration","Restoration","404-726-0254","Atlanta"],
+["Serenity Restoration","Restoration","678-648-1294","Tucker"],
+["Rapid Dry LLC","Restoration","770-820-3356","Scottdale/DeKalb"],
+["RestoPros of Southeast Atlanta","Restoration","470-613-6100","Decatur"],
+["ASAP Restoration Inc.","Restoration","404-655-9415","Metro Atlanta"],
+["Reynolds Restoration Group","Restoration","678-379-3745","Stone Mountain"],
+["Reliable Restoration LLC","Restoration/Rebuild","678-968-8552","Atlanta Metro"],
+["Fast-Paced Restoration","Restoration","404-737-0911","Atlanta Metro"],
+["Abberly Onyx Apartment Homes","Multifamily Community","404-910-4914","Decatur"],
+["Abberly Skye Apartment Homes","Multifamily Community","404-910-4858","Decatur"],
+["Arden Vue Apartments","Multifamily Community","470-873-8786","Decatur"],
+["Windsor Parkview Apartments","Multifamily Community","678-952-2244","Chamblee"],
+["Willis Avondale Estates","Multifamily Community","855-944-6709","Decatur/Avondale"],
+["Avondale Village","Multifamily Community","404-777-1822","Decatur"],
+["Gardenside at The Villages of East Lake","Multifamily Community","404-377-5090","East Atlanta"],
+["1133 on the Square","Multifamily Community","833-400-0948","Decatur"],
+["The Hawkins Apartments","New Construction Multifamily","470-274-7088","Chamblee"],
+["Summit Embry Hills","Multifamily Community","833-784-0845","Doraville"],
+["Vela Park","New Construction Apartments/Townhomes","470-517-6282","Decatur/East Lake"],
+["Edgewater Vista","Multifamily Community","404-383-6042","Decatur"],
+["Bexley Chamblee","Multifamily Community","844-779-8747","Chamblee"],
+["1086 on Montreal","Multifamily Community","404-296-8516","Clarkston"],
+["Fortis Property Management","Multifamily Management Company","678-741-2835","Atlanta"],
+["Kinstone Communities","Multifamily Management Company","770-952-8537","Atlanta"],
+["Fogelman","Multifamily Management Company","","Atlanta Market"]
+].map((r,i)=>({id:"seed-"+i, company:r[0], type:r[1], phone:r[2], area:r[3], status:"New", notes:""}));
+
+const SCRIPTS_SEED = [
+  {id:"s1", title:"General Contractor Cold Call Opener", tag:"General Contractors",
+   body:"Who handles your final cleaning before homeowner walkthroughs? I'm looking to become a reliable final-clean vendor for contractors in the Atlanta area."},
+  {id:"s2", title:"Contractor Intro Pitch", tag:"Remodelers / Builders",
+   body:"I'm building a local final-clean subcontracting company. We help contractors deliver move-in-ready homes without pulling their crews away from construction."},
+  {id:"s3", title:"Property Manager Pitch", tag:"Property Managers",
+   body:"We help you turn units faster between tenants by handling detailed cleaning and move-in readiness."},
+  {id:"s4", title:"Restoration Company Pitch", tag:"Restoration Companies",
+   body:"We provide final cleaning support after repairs, helping your team deliver a finished property."},
+  {id:"s5", title:"Apartment Community Script", tag:"Multifamily / Apartment Communities",
+   body:"Hi, I'm [Your Name] with [Company Name]. We provide insured final cleaning and make-ready services for apartment communities. We help maintenance teams turn units faster between residents by handling detailed cleaning, dust removal, and move-in preparation. Who handles your vendor approvals for turnover cleaning?"}
+];
+
+const DEMO_CREW = [
+  {id:"demo-1", name:"Marcus Bell", role:"Lead", team:"Termination Team", teamType:"Termination", task:"Runs cable terminations, panel tie-ins", strength:"Fast, clean terminations", rank:"Strong", overtime:true, demo:true},
+  {id:"demo-2", name:"Jerome Davis", role:"Helper", team:"Termination Team", teamType:"Termination", task:"Termination technician", strength:"Detail-oriented", rank:"Strong", overtime:true, demo:true},
+  {id:"demo-3", name:"DeShawn Carter", role:"Lead", team:"Wiring Team", teamType:"Wiring", task:"Runs wire pulls, rough-in", strength:"Knows blueprints cold", rank:"Strong", overtime:true, demo:true},
+  {id:"demo-4", name:"Antoine Ross", role:"Helper", team:"Wiring Team", teamType:"Wiring", task:"Pipe inside", strength:"Quick learner", rank:"Average", overtime:false, demo:true},
+  {id:"demo-5", name:"Kevin Price", role:"Helper", team:"Wiring Team", teamType:"Wiring", task:"Pipe outside", strength:"Reliable, shows up early", rank:"Strong", overtime:true, demo:true},
+  {id:"demo-6", name:"Isaiah Moore", role:"Lead", team:"Conduit Bending Team", teamType:"Conduit Bending", task:"Conduit layout and bending", strength:"Precise bends, fast", rank:"Strong", overtime:true, demo:true},
+  {id:"demo-7", name:"Terrence Hall", role:"Helper", team:"Conduit Bending Team", teamType:"Conduit Bending", task:"Conduit support / hanging", strength:"Strong work ethic", rank:"Average", overtime:true, demo:true},
+  {id:"demo-8", name:"Bryan Lopez", role:"Helper", team:"Conduit Bending Team", teamType:"Conduit Bending", task:"General labor", strength:"New, still learning", rank:"Weak", overtime:false, demo:true}
+];
+const DEMO_CHAT = [
+  {id:"demo-m1", author:"Marcus Bell", text:"Termination team on site, starting panel tie-ins now.", ts: Date.now()-1000*60*42},
+  {id:"demo-m2", author:"DeShawn Carter", text:"Wiring crew rolling in 15 min, traffic on 285.", ts: Date.now()-1000*60*30},
+  {id:"demo-m3", author:"Isaiah Moore", text:"Need more conduit hangers dropped at the east side.", ts: Date.now()-1000*60*11}
+];
+const DEMO_LOCATIONS = [
+  {employeeId:"demo-1", name:"Marcus Bell", role:"Lead", lat:33.7701, lng:-84.2953, accuracy:25, ts: Date.now()-1000*60*2},
+  {employeeId:"demo-3", name:"DeShawn Carter", role:"Lead", lat:33.7925, lng:-84.3021, accuracy:18, ts: Date.now()-1000*60*1}
+];
+
+/* ================= STORAGE HELPERS ================= */
+async function getVal(key, shared, fallback){
+  try{
+    const r = await window.storage.get(key, shared);
+    return r ? JSON.parse(r.value) : fallback;
+  }catch(e){ return fallback; }
+}
+async function setVal(key, shared, value){
+  try{ await window.storage.set(key, JSON.stringify(value), shared); }
+  catch(e){ console.error("storage set failed", key, e); }
+}
+
+let leads = [];
+let scripts = [];
+let crew = [];
+let handle = "";
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+/* ================= SITE MENU ================= */
+const menuOverlay = document.getElementById('menuOverlay');
+document.getElementById('menuBtn').addEventListener('click', ()=> menuOverlay.classList.add('show'));
+document.getElementById('menuCloseBtn').addEventListener('click', ()=> menuOverlay.classList.remove('show'));
+menuOverlay.addEventListener('click', (e)=>{ if(e.target === menuOverlay) menuOverlay.classList.remove('show'); });
+
+/* ================= TABS ================= */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ================= CALL LIST ================= */
+function statusCounts(){
+  const c = {New:0,Called:0,"No Answer":0,Interested:0,"Not Now":0,Won:0,Lost:0};
+  leads.forEach(l=>{ if(c[l.status]!==undefined) c[l.status]++; });
+  return c;
+}
+function renderStats(){
+  const c = statusCounts();
+  const row = document.getElementById('statRow');
+  row.innerHTML = "";
+  const order = ["New","Called","No Answer","Interested","Not Now","Won"];
+  order.forEach(k=>{
+    row.innerHTML += `<div class="stat"><b>${c[k]||0}</b><span>${k}</span></div>`;
+  });
+  row.innerHTML += `<div class="stat"><b>${leads.length}</b><span>Total</span></div>`;
+}
+function renderLeads(){
+  const q = document.getElementById('leadSearch').value.trim().toLowerCase();
+  const f = document.getElementById('statusFilter').value;
+  const list = document.getElementById('leadList');
+  const filtered = leads.filter(l=>{
+    const matchQ = !q || (l.company+" "+l.type+" "+l.area).toLowerCase().includes(q);
+    const matchF = !f || l.status===f;
+    return matchQ && matchF;
+  });
+  list.innerHTML = "";
+  if(!filtered.length){ list.innerHTML = `<div class="muted" style="padding:10px 0;">No leads match.</div>`; return; }
+  filtered.forEach((l,idx)=>{
+    const row = document.createElement('div');
+    row.className = "lead-row";
+    row.dataset.status = l.status;
+    row.innerHTML = `
+      <div class="lead-num">${idx+1}</div>
+      <div class="lead-main">
+        <div class="lead-name">${escapeHtml(l.company)}</div>
+        <div class="lead-meta">${escapeHtml(l.type||"—")}${l.phone?` · <a href="tel:${l.phone.replace(/[^0-9+]/g,'')}">${escapeHtml(l.phone)}</a>`:""}${l.area?` · ${escapeHtml(l.area)}`:""}</div>
+      </div>
+      <div class="lead-actions">
+        <select data-id="${l.id}" class="statusSel">
+          ${["New","Called","No Answer","Interested","Not Now","Won","Lost"].map(s=>`<option ${s===l.status?"selected":""}>${s}</option>`).join("")}
+        </select>
+      </div>`;
+    list.appendChild(row);
+  });
+  list.querySelectorAll('.statusSel').forEach(sel=>{
+    sel.addEventListener('change', async ()=>{
+      const lead = leads.find(l=>l.id===sel.dataset.id);
+      lead.status = sel.value;
+      await setVal('leads-data', true, leads);
+      renderStats(); renderLeads();
+    });
+  });
+}
+function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+document.getElementById('leadSearch').addEventListener('input', renderLeads);
+document.getElementById('statusFilter').addEventListener('change', renderLeads);
+document.getElementById('addLeadBtn').addEventListener('click', ()=>{
+  document.getElementById('addLeadForm').style.display='block';
+});
+document.getElementById('cancelLeadBtn').addEventListener('click', ()=>{
+  document.getElementById('addLeadForm').style.display='none';
+});
+document.getElementById('saveLeadBtn').addEventListener('click', async ()=>{
+  const company = document.getElementById('nlCompany').value.trim();
+  if(!company){ toast("Company name required"); return; }
+  const newLead = {
+    id: "l-"+Date.now(),
+    company,
+    type: document.getElementById('nlType').value.trim(),
+    phone: document.getElementById('nlPhone').value.trim(),
+    area: document.getElementById('nlArea').value.trim(),
+    status: "New", notes: ""
+  };
+  leads.unshift(newLead);
+  await setVal('leads-data', true, leads);
+  ['nlCompany','nlType','nlPhone','nlArea'].forEach(id=>document.getElementById(id).value="");
+  document.getElementById('addLeadForm').style.display='none';
+  renderStats(); renderLeads();
+  toast("Lead added");
+});
+
+/* ================= MANPOWER ================= */
+function renderCrewStats(){
+  const row = document.getElementById('crewStatRow');
+  const teams = new Set(crew.filter(e=>e.team).map(e=>e.team));
+  const leadsCount = crew.filter(e=>e.role==="Lead").length;
+  const otCount = crew.filter(e=>e.overtime).length;
+  const weakCount = crew.filter(e=>e.rank==="Weak").length;
+  row.innerHTML = `
+    <div class="stat"><b>${crew.length}</b><span>Employees</span></div>
+    <div class="stat"><b>${teams.size}</b><span>Teams</span></div>
+    <div class="stat"><b>${leadsCount}</b><span>Leads</span></div>
+    <div class="stat"><b>${otCount}</b><span>OT Willing</span></div>
+    <div class="stat"><b>${weakCount}</b><span>Weak Link</span></div>`;
+}
+function refreshTeamFilterOptions(){
+  const sel = document.getElementById('crewTeamFilter');
+  const current = sel.value;
+  const teams = Array.from(new Set(crew.filter(e=>e.team).map(e=>e.team))).sort();
+  sel.innerHTML = `<option value="">All teams</option>` + teams.map(t=>`<option ${t===current?"selected":""}>${escapeHtml(t)}</option>`).join("");
+  const dl = document.getElementById('teamNameList');
+  dl.innerHTML = teams.map(t=>`<option value="${escapeHtml(t)}">`).join("");
+}
+function renderCrew(){
+  refreshTeamFilterOptions();
+  const q = document.getElementById('crewSearch').value.trim().toLowerCase();
+  const teamFilter = document.getElementById('crewTeamFilter').value;
+  const list = document.getElementById('crewList');
+  document.getElementById('crewEmpty').style.display = crew.length ? "none" : "block";
+
+  const filtered = crew.filter(e=>{
+    const matchQ = !q || (e.name+" "+e.team+" "+e.teamType+" "+e.task+" "+e.strength).toLowerCase().includes(q);
+    const matchT = !teamFilter || e.team===teamFilter;
+    return matchQ && matchT;
+  });
+
+  // group by team ("" -> Unassigned)
+  const groups = {};
+  filtered.forEach(e=>{
+    const key = e.team || "__unassigned__";
+    if(!groups[key]) groups[key] = [];
+    groups[key].push(e);
+  });
+
+  const teamKeys = Object.keys(groups).filter(k=>k!=="__unassigned__").sort();
+  if(groups["__unassigned__"]) teamKeys.push("__unassigned__");
+
+  list.innerHTML = "";
+  if(!filtered.length){
+    if(crew.length) list.innerHTML = `<div class="muted" style="padding:10px 0;">No employees match.</div>`;
+    return;
+  }
+
+  teamKeys.forEach(key=>{
+    const members = groups[key].slice().sort((a,b)=> (a.role==="Lead"?0:1) - (b.role==="Lead"?0:1));
+    const lead = members.find(m=>m.role==="Lead");
+    const teamType = lead ? lead.teamType : (members.find(m=>m.teamType)||{}).teamType;
+    const teamCard = document.createElement('div');
+    teamCard.className = "team-card";
+    const headName = key==="__unassigned__" ? "Unassigned" : key;
+    teamCard.innerHTML = `
+      <div class="team-head">
+        <div>
+          <div class="team-name">${escapeHtml(headName)}</div>
+          ${teamType?`<div class="team-type">${escapeHtml(teamType)}</div>`:""}
+        </div>
+        <div class="team-count">${members.length} on team</div>
+      </div>`;
+    members.forEach(e=>{
+      const row = document.createElement('div');
+      row.className = "emp-row";
+      row.dataset.role = e.role;
+      row.innerHTML = `
+        <div class="emp-main">
+          <div class="emp-name">${escapeHtml(e.name)}<span class="role-badge">${e.role==="Lead"?"Lead/Foreman":"Helper"}</span>${e.demo?'<span class="role-badge" style="background:var(--yellow);color:var(--ink);">DEMO</span>':''}</div>
+          <div class="emp-meta">${e.task?escapeHtml(e.task):"—"}${e.strength?` · Strength: ${escapeHtml(e.strength)}`:""}</div>
+        </div>
+        <div class="emp-tags">
+          <span class="rank-badge" data-rank="${e.rank}">${e.rank}</span>
+          ${e.overtime?`<span class="ot-badge">OT ready</span>`:""}
+          <button class="small emp-del" data-id="${e.id}">Remove</button>
+        </div>`;
+      teamCard.appendChild(row);
+    });
+    list.appendChild(teamCard);
+  });
+
+  list.querySelectorAll('.emp-del').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      crew = crew.filter(e=>e.id!==btn.dataset.id);
+      await setVal('crew-data', true, crew);
+      renderCrewStats(); renderCrew();
+      toast("Employee removed");
+    });
+  });
+}
+document.getElementById('crewSearch').addEventListener('input', renderCrew);
+document.getElementById('crewTeamFilter').addEventListener('change', renderCrew);
+document.getElementById('addCrewBtn').addEventListener('click', ()=>{
+  document.getElementById('addCrewForm').style.display='block';
+});
+document.getElementById('clearDemoBtn').addEventListener('click', async ()=>{
+  if(!confirm("Remove all demo employees, demo radio messages, and demo GPS pins? Real data you've added stays.")) return;
+  crew = crew.filter(e=>!e.demo);
+  await setVal('crew-data', true, crew);
+  const msgs = await getVal('chat-messages', true, []);
+  const cleaned = msgs.filter(m=>!m.id || !m.id.startsWith('demo-'));
+  await setVal('chat-messages', true, cleaned);
+  for(const loc of DEMO_LOCATIONS){ await delVal('live-location-'+loc.employeeId, true); }
+  renderCrewStats(); renderCrew(); loadChat(); loadGps();
+  toast("Demo data cleared");
+});
+async function delVal(key, shared){ try{ await window.storage.delete(key, shared); }catch(e){} }
+document.getElementById('cancelCrewBtn').addEventListener('click', ()=>{
+  document.getElementById('addCrewForm').style.display='none';
+});
+document.getElementById('saveCrewBtn').addEventListener('click', async ()=>{
+  const name = document.getElementById('ceName').value.trim();
+  if(!name){ toast("Employee name required"); return; }
+  const newEmp = {
+    id: "c-"+Date.now(),
+    name,
+    role: document.getElementById('ceRole').value,
+    team: document.getElementById('ceTeam').value.trim(),
+    teamType: document.getElementById('ceTeamType').value.trim(),
+    task: document.getElementById('ceTask').value.trim(),
+    strength: document.getElementById('ceStrength').value.trim(),
+    rank: document.getElementById('ceRank').value,
+    overtime: document.getElementById('ceOT').checked
+  };
+  crew.unshift(newEmp);
+  await setVal('crew-data', true, crew);
+  ['ceName','ceTeam','ceTeamType','ceTask','ceStrength'].forEach(id=>document.getElementById(id).value="");
+  document.getElementById('ceRole').value = "Lead";
+  document.getElementById('ceRank').value = "Strong";
+  document.getElementById('ceOT').checked = false;
+  document.getElementById('addCrewForm').style.display='none';
+  renderCrewStats(); renderCrew();
+  toast("Employee added");
+});
+
+/* ================= GPS ================= */
+async function loadGps(){
+  const idx = await window.storage.list('live-location-', true).catch(()=>null);
+  const keys = (idx && idx.keys) ? idx.keys : [];
+  const rows = [];
+  for(const k of keys){
+    try{
+      const r = await window.storage.get(k, true);
+      if(r) rows.push(JSON.parse(r.value));
+    }catch(e){}
+  }
+  rows.sort((a,b)=>b.ts-a.ts);
+  renderGps(rows);
+}
+function renderGps(rows){
+  const statRow = document.getElementById('gpsStatRow');
+  const staleCutoff = Date.now() - 3*60*1000;
+  const live = rows.filter(r=>r.ts >= staleCutoff);
+  statRow.innerHTML = `
+    <div class="stat"><b>${rows.length}</b><span>Reporting</span></div>
+    <div class="stat"><b>${live.length}</b><span>Live now</span></div>`;
+  const list = document.getElementById('gpsList');
+  document.getElementById('gpsEmpty').style.display = rows.length ? "none" : "block";
+  list.innerHTML = "";
+  rows.forEach(r=>{
+    const stale = r.ts < staleCutoff;
+    const row = document.createElement('div');
+    row.className = "gps-row" + (stale ? " gps-stale" : "");
+    const ago = Math.max(0, Math.round((Date.now()-r.ts)/1000));
+    const agoText = ago < 60 ? `${ago}s ago` : `${Math.round(ago/60)}m ago`;
+    row.innerHTML = `
+      <div class="gps-main">
+        <div class="gps-name">${escapeHtml(r.name)}</div>
+        <div class="gps-meta">${r.role==='Lead'?'Lead/Foreman':'Helper'} · updated ${agoText} · ±${Math.round(r.accuracy||0)}m</div>
+      </div>
+      <a class="mapbtn" target="_blank" href="https://www.google.com/maps?q=${r.lat},${r.lng}">Open in Maps</a>`;
+    list.appendChild(row);
+  });
+}
+let gpsPoll = null;
+function startGpsPolling(){
+  loadGps();
+  if(gpsPoll) clearInterval(gpsPoll);
+  gpsPoll = setInterval(()=>{
+    if(document.getElementById('panel-gps').classList.contains('active') && document.visibilityState==='visible'){
+      loadGps();
+    }
+  }, 8000);
+}
+
+/* ================= TEAM RADIO ================= */
+function pad(n){ return n.toString().padStart(2,'0'); }
+function tickClock(){
+  const d = new Date();
+  document.getElementById('clockTime').textContent = pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds());
+  document.getElementById('clockDate').textContent = d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
+}
+setInterval(tickClock, 1000); tickClock();
+
+async function loadHandle(){
+  handle = await getVal('radio-handle', false, "");
+  document.getElementById('handleDisplay').textContent = handle ? "handle: "+handle : "no handle set";
+  document.getElementById('handleSetup').style.display = handle ? "none" : "flex";
+  if(handle) document.getElementById('handleInput').value = handle;
+}
+document.getElementById('setHandleBtn').addEventListener('click', async ()=>{
+  const v = document.getElementById('handleInput').value.trim();
+  if(!v) return;
+  handle = v;
+  await setVal('radio-handle', false, handle);
+  document.getElementById('handleDisplay').textContent = "handle: "+handle;
+  document.getElementById('handleSetup').style.display = "none";
+  toast("Handle set");
+});
+
+function renderChat(messages){
+  const log = document.getElementById('chatLog');
+  const wasAtBottom = log.scrollTop + log.clientHeight >= log.scrollHeight - 20;
+  if(!messages.length){ log.innerHTML = `<div class="empty-log">No transmissions yet. Break the silence.</div>`; return; }
+  log.innerHTML = messages.map(m=>{
+    const d = new Date(m.ts);
+    return `<div class="msg"><span class="who">${escapeHtml(m.author)}</span><span class="when">${pad(d.getHours())}:${pad(d.getMinutes())}</span><div class="txt">${escapeHtml(m.text)}</div></div>`;
+  }).join("");
+  if(wasAtBottom) log.scrollTop = log.scrollHeight;
+}
+async function loadChat(){
+  const msgs = await getVal('chat-messages', true, []);
+  renderChat(msgs);
+  return msgs;
+}
+async function sendChat(){
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if(!text) return;
+  if(!handle){ toast("Set your radio handle first"); return; }
+  const msgs = await getVal('chat-messages', true, []);
+  msgs.push({id:"m-"+Date.now(), author:handle, text, ts:Date.now()});
+  while(msgs.length > 200) msgs.shift();
+  await setVal('chat-messages', true, msgs);
+  input.value = "";
+  renderChat(msgs);
+}
+document.getElementById('sendChatBtn').addEventListener('click', sendChat);
+document.getElementById('chatInput').addEventListener('keydown', e=>{ if(e.key==='Enter') sendChat(); });
+setInterval(async ()=>{
+  if(document.getElementById('panel-radio').classList.contains('active') && document.visibilityState==='visible'){
+    await loadChat();
+  }
+}, 4000);
+
+/* ================= VENDOR FILES ================= */
+document.getElementById('dropzone').addEventListener('click', ()=>document.getElementById('fileInput').click());
+document.getElementById('fileInput').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  if(file.size > 3.5*1024*1024){ toast("File too large — 3.5MB limit"); e.target.value=""; return; }
+  const reader = new FileReader();
+  reader.onload = async ()=>{
+    const id = "f-"+Date.now();
+    try{
+      await window.storage.set('vendor-file-'+id, reader.result, true);
+      const index = await getVal('vendor-files-index', true, []);
+      index.unshift({id, name:file.name, type:file.type||"file", size:file.size, addedBy: handle||"unknown", ts:Date.now()});
+      await setVal('vendor-files-index', true, index);
+      renderFiles(index);
+      toast("File uploaded");
+    }catch(err){ toast("Upload failed — try a smaller file"); }
+    e.target.value = "";
+  };
+  reader.readAsDataURL(file);
+});
+function fileBadge(type){
+  if(type.includes('pdf')) return 'PDF';
+  if(type.includes('image')) return 'IMG';
+  if(type.includes('sheet')||type.includes('excel')||type.includes('csv')) return 'XLS';
+  if(type.includes('word')||type.includes('document')) return 'DOC';
+  return 'FILE';
+}
+function fmtSize(b){ return b>1024*1024 ? (b/1024/1024).toFixed(1)+"MB" : Math.round(b/1024)+"KB"; }
+function renderFiles(index){
+  const list = document.getElementById('fileList');
+  document.getElementById('filesEmpty').style.display = index.length ? "none":"block";
+  list.innerHTML = "";
+  index.forEach(f=>{
+    const row = document.createElement('div');
+    row.className = "file-row";
+    row.innerHTML = `
+      <div class="file-icon">${fileBadge(f.type)}</div>
+      <div class="file-main">
+        <div class="file-name">${escapeHtml(f.name)}</div>
+        <div class="file-meta">${fmtSize(f.size)} · added by ${escapeHtml(f.addedBy)} · ${new Date(f.ts).toLocaleDateString()}</div>
+      </div>
+      <button class="small ghost" data-id="${f.id}" data-name="${escapeHtml(f.name)}">View</button>`;
+    list.appendChild(row);
+  });
+  list.querySelectorAll('button[data-id]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      try{
+        const r = await window.storage.get('vendor-file-'+btn.dataset.id, true);
+        const a = document.createElement('a');
+        a.href = r.value;
+        a.download = btn.dataset.name;
+        a.target = "_blank";
+        document.body.appendChild(a); a.click(); a.remove();
+      }catch(e){ toast("Couldn't load file"); }
+    });
+  });
+}
+
+/* ================= SCRIPTS ================= */
+document.getElementById('addScriptBtn').addEventListener('click', ()=>{
+  document.getElementById('addScriptForm').style.display='block';
+});
+document.getElementById('cancelScriptBtn').addEventListener('click', ()=>{
+  document.getElementById('addScriptForm').style.display='none';
+});
+document.getElementById('saveScriptBtn').addEventListener('click', async ()=>{
+  const title = document.getElementById('nsTitle').value.trim();
+  const body = document.getElementById('nsBody').value.trim();
+  if(!title || !body){ toast("Title and script text required"); return; }
+  scripts.unshift({id:"s-"+Date.now(), title, tag: document.getElementById('nsTag').value.trim()||"Custom", body});
+  await setVal('scripts-library', true, scripts);
+  ['nsTitle','nsTag','nsBody'].forEach(id=>document.getElementById(id).value="");
+  document.getElementById('addScriptForm').style.display='none';
+  renderScripts();
+  toast("Script saved");
+});
+function renderScripts(){
+  const list = document.getElementById('scriptList');
+  list.innerHTML = "";
+  scripts.forEach(s=>{
+    const card = document.createElement('div');
+    card.className = "script-card";
+    card.innerHTML = `
+      <div class="script-title"><span>${escapeHtml(s.title)}</span><button class="small" data-id="${s.id}">Copy</button></div>
+      <div class="script-tag">${escapeHtml(s.tag)}</div>
+      <div class="script-body">"${escapeHtml(s.body)}"</div>`;
+    list.appendChild(card);
+  });
+  list.querySelectorAll('button[data-id]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const s = scripts.find(x=>x.id===btn.dataset.id);
+      navigator.clipboard?.writeText(s.body).then(()=>toast("Copied to clipboard")).catch(()=>toast("Copy failed"));
+    });
+  });
+}
+
+/* ================= INIT ================= */
+async function init(){
+  // leads
+  let l = await getVal('leads-data', true, null);
+  if(!l){ l = LEADS_SEED; await setVal('leads-data', true, l); }
+  leads = l;
+  renderStats(); renderLeads();
+
+  // scripts
+  let s = await getVal('scripts-library', true, null);
+  if(!s){ s = SCRIPTS_SEED; await setVal('scripts-library', true, s); }
+  scripts = s;
+  renderScripts();
+
+  // crew / manpower
+  let c = await getVal('crew-data', true, null);
+  if(c === null){ c = DEMO_CREW.slice(); await setVal('crew-data', true, c); }
+  crew = c;
+  renderCrewStats(); renderCrew();
+
+  // demo chat + demo gps pins (only if channel is empty)
+  let ch = await getVal('chat-messages', true, null);
+  if(ch === null || ch.length === 0){ await setVal('chat-messages', true, DEMO_CHAT.slice()); }
+  const gpsExisting = await window.storage.list('live-location-', true).catch(()=>null);
+  if(!gpsExisting || !gpsExisting.keys || gpsExisting.keys.length === 0){
+    for(const loc of DEMO_LOCATIONS){ await setVal('live-location-'+loc.employeeId, true, loc); }
+  }
+
+  // gps
+  startGpsPolling();
+
+  // files
+  const index = await getVal('vendor-files-index', true, []);
+  renderFiles(index);
+
+  // radio
+  await loadHandle();
+  await loadChat();
+
+  document.getElementById('statusLine').textContent = `${leads.length} leads loaded · shared with your team`;
+}
+init();
+</script>
+</body>
+</html>
