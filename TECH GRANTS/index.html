@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SENSTACK — Opportunity Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#14171B;
+    --panel:#1B2027;
+    --panel-2:#20262E;
+    --border:#2B323C;
+    --gold:#C89B3C;
+    --gold-soft:rgba(200,155,60,.14);
+    --green:#5B8C6E;
+    --green-soft:rgba(91,140,110,.16);
+    --amber:#C97A2E;
+    --amber-soft:rgba(201,122,46,.16);
+    --red:#B5544A;
+    --red-soft:rgba(181,84,74,.16);
+    --text:#EAE6DB;
+    --muted:#8D929B;
+    --serif:'Fraunces', serif;
+    --sans:'Inter', sans-serif;
+    --mono:'IBM Plex Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 900px 500px at 12% -10%, rgba(200,155,60,.08), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+    padding:0 0 80px;
+  }
+  a{color:inherit;}
+  ::selection{background:var(--gold-soft);}
+
+  /* ---------- Hero ---------- */
+  .hero{
+    max-width:1080px;margin:0 auto;padding:56px 28px 32px;
+    border-bottom:1px solid var(--border);
+  }
+  .eyebrow{
+    font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--gold);display:flex;align-items:center;gap:10px;margin-bottom:18px;
+  }
+  .eyebrow::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 3px var(--gold-soft);}
+  h1.title{
+    font-family:var(--serif);font-weight:600;font-size:clamp(32px,4.4vw,50px);
+    line-height:1.05;margin:0 0 12px;letter-spacing:-.01em;
+  }
+  h1.title em{font-style:italic;font-weight:400;color:var(--gold);}
+  .subtitle{color:var(--muted);font-size:15.5px;max-width:620px;line-height:1.6;margin:0 0 30px;}
+
+  .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+  .stat{background:var(--panel);padding:16px 18px;}
+  .stat .n{font-family:var(--mono);font-size:26px;font-weight:600;}
+  .stat .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:4px;}
+  .stat.gold .n{color:var(--gold);}
+  .stat.amber .n{color:var(--amber);}
+  .stat.green .n{color:var(--green);}
+
+  /* ---------- Toolbar ---------- */
+  .toolbar{
+    max-width:1080px;margin:0 auto;padding:22px 28px 0;
+    display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;
+  }
+  .tags{display:flex;flex-wrap:wrap;gap:7px;}
+  .tag-pill{
+    font-family:var(--mono);font-size:11px;letter-spacing:.03em;padding:6px 11px;border-radius:999px;
+    border:1px solid var(--border);background:var(--panel);color:var(--muted);cursor:pointer;
+    transition:.15s;user-select:none;
+  }
+  .tag-pill:hover{border-color:var(--gold);color:var(--text);}
+  .tag-pill.active{background:var(--gold-soft);border-color:var(--gold);color:var(--gold);}
+  .toolbar-right{display:flex;gap:10px;}
+  .search-input{
+    background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--text);
+    padding:9px 12px;font-family:var(--sans);font-size:13.5px;width:200px;outline:none;
+  }
+  .search-input:focus{border-color:var(--gold);}
+  .btn{
+    font-family:var(--sans);font-weight:600;font-size:13.5px;padding:9px 16px;border-radius:8px;
+    border:1px solid var(--border);background:var(--panel-2);color:var(--text);cursor:pointer;transition:.15s;
+  }
+  .btn:hover{border-color:var(--gold);}
+  .btn.primary{background:var(--gold);color:#20180A;border-color:var(--gold);}
+  .btn.primary:hover{filter:brightness(1.08);}
+  .btn.ghost{background:transparent;}
+
+  /* ---------- Board ---------- */
+  .board{max-width:1080px;margin:26px auto 0;padding:0 28px;display:flex;flex-direction:column;gap:12px;}
+
+  .card{
+    background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden;
+  }
+  .card-top{display:flex;gap:0;}
+  .rail{
+    display:flex;flex-direction:column;justify-content:space-between;width:34px;flex-shrink:0;
+    background:var(--panel-2);border-right:1px solid var(--border);padding:14px 0;
+  }
+  .rail-dot{
+    width:12px;height:12px;border-radius:50%;margin:0 auto;border:2px solid var(--border);
+    background:var(--panel);cursor:pointer;position:relative;flex-shrink:0;
+  }
+  .rail-dot::after{content:'';position:absolute;left:50%;top:100%;width:1px;height:14px;background:var(--border);transform:translateX(-50%);}
+  .rail-dot:last-child::after{display:none;}
+  .rail-dot.done{background:var(--gold);border-color:var(--gold);}
+  .rail-dot.current{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft);}
+
+  .card-body{flex:1;padding:16px 20px;cursor:pointer;}
+  .card-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;}
+  .card-name{font-family:var(--serif);font-weight:600;font-size:19px;margin:0;}
+  .card-org{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .card-meta{display:flex;gap:8px;align-items:center;flex-shrink:0;}
+  .score{
+    font-family:var(--mono);font-size:12px;font-weight:600;padding:5px 9px;border-radius:6px;
+    background:var(--green-soft);color:var(--green);white-space:nowrap;
+  }
+  .score.mid{background:var(--amber-soft);color:var(--amber);}
+  .score.low{background:var(--red-soft);color:var(--red);}
+  .deadline-chip{
+    font-family:var(--mono);font-size:11px;padding:5px 9px;border-radius:6px;white-space:nowrap;
+    background:var(--panel-2);color:var(--muted);border:1px solid var(--border);
+  }
+  .deadline-chip.soon{background:var(--red-soft);color:var(--red);border-color:transparent;}
+  .deadline-chip.near{background:var(--amber-soft);color:var(--amber);border-color:transparent;}
+
+  .card-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+  .mini-tag{font-family:var(--mono);font-size:10.5px;color:var(--muted);border:1px solid var(--border);padding:3px 8px;border-radius:999px;}
+  .card-desc{font-size:13px;color:var(--muted);margin-top:10px;line-height:1.55;max-width:640px;}
+  .stage-label{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);margin-top:12px;}
+
+  /* Expanded panel */
+  .panel{display:none;border-top:1px solid var(--border);padding:18px 20px 20px;background:var(--panel-2);}
+  .panel.open{display:block;}
+  .panel-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
+  @media (max-width:720px){.panel-grid{grid-template-columns:1fr;}}
+  .panel h4{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 10px;}
+  .checklist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px;}
+  .checklist li{display:flex;align-items:flex-start;gap:9px;font-size:13px;line-height:1.4;}
+  .checklist input{margin-top:3px;accent-color:var(--gold);}
+  .checklist li.checked span{color:var(--muted);text-decoration:line-through;}
+  textarea.notes{
+    width:100%;min-height:70px;background:var(--panel);border:1px solid var(--border);border-radius:8px;
+    color:var(--text);font-family:var(--sans);font-size:13px;padding:10px;resize:vertical;outline:none;
+  }
+  textarea.notes:focus{border-color:var(--gold);}
+  .panel-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+
+  /* ---------- Modal ---------- */
+  .overlay{
+    display:none;position:fixed;inset:0;background:rgba(10,12,14,.7);backdrop-filter:blur(3px);
+    align-items:flex-start;justify-content:center;padding:48px 16px;z-index:50;overflow-y:auto;
+  }
+  .overlay.open{display:flex;}
+  .modal{
+    background:var(--panel);border:1px solid var(--border);border-radius:14px;max-width:560px;width:100%;
+    padding:26px 26px 22px;
+  }
+  .modal h3{font-family:var(--serif);font-size:22px;margin:0 0 4px;}
+  .modal .modal-sub{color:var(--muted);font-size:13px;margin-bottom:18px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px;}
+  .field input, .field select, .field textarea{
+    width:100%;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;color:var(--text);
+    padding:9px 11px;font-family:var(--sans);font-size:13.5px;outline:none;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{border-color:var(--gold);}
+  .field textarea{min-height:60px;resize:vertical;}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .tag-check{display:flex;flex-wrap:wrap;gap:7px;}
+  .tag-check label{
+    font-family:var(--mono);font-size:11px;border:1px solid var(--border);border-radius:999px;padding:6px 11px;
+    cursor:pointer;color:var(--muted);text-transform:none;letter-spacing:0;
+  }
+  .tag-check input{display:none;}
+  .tag-check input:checked + span{color:var(--gold);}
+  .tag-check label:has(input:checked){border-color:var(--gold);background:var(--gold-soft);}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;}
+
+  .mail-note{
+    font-size:12px;color:var(--muted);background:var(--panel-2);border:1px solid var(--border);
+    border-radius:8px;padding:10px 12px;margin-top:12px;line-height:1.5;
+  }
+  .mail-note b{color:var(--text);}
+
+  .empty{text-align:center;padding:60px 20px;color:var(--muted);}
+  .empty .big{font-family:var(--serif);font-size:20px;color:var(--text);margin-bottom:6px;}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="eyebrow">SENSTACK OS · Opportunity Center</div>
+  <h1 class="title">Georgia funding, <em>worked systematically.</em></h1>
+  <p class="subtitle">One pipeline for every grant, accelerator, and capital program worth pursuing — tracked from research through follow-up, with RadioMeltdown as the flagship proof point for SENSTACK.</p>
+  <div class="stat-row" id="statRow"></div>
+</div>
+
+<div class="toolbar">
+  <div class="tags" id="tagFilters"></div>
+  <div class="toolbar-right">
+    <input class="search-input" id="searchInput" placeholder="Search opportunities…">
+    <button class="btn primary" id="addBtn">+ Add opportunity</button>
+  </div>
+</div>
+
+<div class="board" id="board"></div>
+
+<!-- Add/Edit Modal -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3 id="modalTitle">Add opportunity</h3>
+    <div class="modal-sub">Track it once, work it through every stage.</div>
+    <div class="field"><label>Name</label><input id="f_name" placeholder="e.g. ATDC Accelerate"></div>
+    <div class="field"><label>Organization</label><input id="f_org" placeholder="e.g. Georgia Tech"></div>
+    <div class="field-row">
+      <div class="field"><label>Deadline</label><input id="f_deadline" type="date"></div>
+      <div class="field"><label>Match score (%)</label><input id="f_score" type="number" min="0" max="100" value="70"></div>
+    </div>
+    <div class="field"><label>Stage</label>
+      <select id="f_stage">
+        <option value="0">Research</option>
+        <option value="1">Eligibility</option>
+        <option value="2">Documents</option>
+        <option value="3">Submitted</option>
+        <option value="4">Follow-up</option>
+      </select>
+    </div>
+    <div class="field"><label>Category</label>
+      <div class="tag-check" id="f_tags"></div>
+    </div>
+    <div class="field"><label>Description</label><textarea id="f_desc" placeholder="What this program offers"></textarea></div>
+    <div class="field"><label>Eligibility checklist (one per line)</label><textarea id="f_elig" placeholder="Georgia-based&#10;Have an MVP"></textarea></div>
+    <div class="field"><label>Required documents (one per line)</label><textarea id="f_docs" placeholder="Pitch deck&#10;Cap table"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="cancelBtn">Cancel</button>
+      <button class="btn primary" id="saveBtn">Save opportunity</button>
+    </div>
+  </div>
+</div>
+
+<!-- Email Modal -->
+<div class="overlay" id="mailOverlay">
+  <div class="modal">
+    <h3>Compose follow-up</h3>
+    <div class="modal-sub" id="mailSub">For <span id="mailOppName"></span></div>
+    <div class="field"><label>To</label><input id="m_to" placeholder="contact@organization.org"></div>
+    <div class="field"><label>Subject</label><input id="m_subject"></div>
+    <div class="field"><label>Body</label><textarea id="m_body" style="min-height:140px;"></textarea></div>
+    <div class="mail-note">This opens a draft in <b>your own email app</b> (Mail, Gmail, Outlook) with everything pre-filled — a web page can't send email directly from your inbox without a connected mail account. Once a mail connector is linked to this dashboard, this button can send it for you automatically.</div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="mailCancelBtn">Cancel</button>
+      <button class="btn primary" id="mailSendBtn">Open in email app →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STAGES = ['Research','Eligibility','Documents','Submitted','Follow-up'];
+const ALL_TAGS = ['Women-owned','Black founders','AI startups','EdTech','MediaTech','Workforce development','Community technology','Non-dilutive'];
+
+let opportunities = [
+  {
+    id:1, name:'ATDC Accelerate', org:'Georgia Tech — Advanced Technology Development Center',
+    deadline:'2026-09-15', score:88, stage:1, tags:['AI startups','Non-dilutive'],
+    desc:'Mentorship, investor introductions, and educational programming for Georgia tech startups with an MVP and early traction. A strong fit for positioning SENSTACK OS with RadioMeltdown as its proof-of-production app.',
+    eligibility:[{t:'Georgia-based company',done:true},{t:'Have a working MVP',done:true},{t:'Some early user traction',done:false},{t:'Founder available for in-person Atlanta programming',done:false}],
+    docs:[{t:'Pitch deck (10–12 slides)',done:false},{t:'One-page company overview',done:false},{t:'Product demo / walkthrough',done:false}],
+    notes:''
+  },
+  {
+    id:2, name:'Founder Catalyst', org:'Techstars',
+    deadline:'2026-08-30', score:76, stage:0, tags:['AI startups','Non-dilutive'],
+    desc:'Free, equity-free pre-accelerator to sharpen pitch, positioning, and fundraising readiness before applying to larger accelerators or raises.',
+    eligibility:[{t:'Early-stage founder, no cohort location restriction',done:true},{t:'Willing to commit weekly time to the program',done:false}],
+    docs:[{t:'Founder application form',done:false},{t:'Current pitch summary',done:false}],
+    notes:''
+  },
+  {
+    id:3, name:'Invest Georgia / SSBCI', org:'State of Georgia',
+    deadline:'2026-12-01', score:62, stage:0, tags:['Non-dilutive','Workforce development'],
+    desc:'State-backed venture capital access under the federal State Small Business Credit Initiative, with an explicit focus on increasing capital access for socially and economically disadvantaged founders.',
+    eligibility:[{t:'Georgia-headquartered business',done:true},{t:'Meets SSBCI disadvantaged-business criteria (if applicable)',done:false},{t:'Registered entity in good standing',done:false}],
+    docs:[{t:'Business registration documents',done:false},{t:'Financial statements / projections',done:false}],
+    notes:''
+  },
+  {
+    id:4, name:'RICE Business Generator', org:'Russell Innovation Center for Entrepreneurs',
+    deadline:'2026-09-01', score:81, stage:0, tags:['Black founders','Community technology'],
+    desc:'The largest center in the world dedicated to growing Black entrepreneurs — mentoring, coworking, capital access, and a network built on Herman J. Russell\'s legacy, backed by a recent $2M Blank Family Foundation gift.',
+    eligibility:[{t:'Black-owned, founded, or controlled business',done:true},{t:'Metro Atlanta based or willing to engage locally',done:false}],
+    docs:[{t:'Business overview',done:false},{t:'Application form (RICE portal)',done:false}],
+    notes:''
+  },
+  {
+    id:5, name:'Amber Grant', org:'WomensNet',
+    deadline:'2026-08-31', score:58, stage:0, tags:['Women-owned','Non-dilutive'],
+    desc:'Monthly $10,000 grant for women-owned businesses via a short two-question application; monthly winners are eligible for an additional $50,000 year-end award.',
+    eligibility:[{t:'Woman-owned business',done:true},{t:'Able to tell a compelling two-question business story',done:false}],
+    docs:[{t:'Business story submission (via WomensNet form)',done:false}],
+    notes:''
+  },
+];
+
+let editingId = null;
+let mailOppId = null;
+let activeTags = new Set();
+
+function daysUntil(dateStr){
+  const d = new Date(dateStr + 'T00:00:00');
+  const now = new Date(); now.setHours(0,0,0,0);
+  return Math.round((d-now)/86400000);
+}
+function scoreClass(s){ return s>=75?'':s>=50?'mid':'low'; }
+function deadlineClass(days){ return days<=14?'soon':days<=30?'near':''; }
+
+function renderStats(){
+  const total = opportunities.length;
+  const research = opportunities.filter(o=>o.stage===0).length;
+  const submitted = opportunities.filter(o=>o.stage>=3).length;
+  const soon = opportunities.filter(o=>daysUntil(o.deadline)<=30 && daysUntil(o.deadline)>=0).length;
+  document.getElementById('statRow').innerHTML = `
+    <div class="stat"><div class="n">${total}</div><div class="l">Tracked</div></div>
+    <div class="stat"><div class="n">${research}</div><div class="l">In research</div></div>
+    <div class="stat gold"><div class="n">${soon}</div><div class="l">Due in 30 days</div></div>
+    <div class="stat green"><div class="n">${submitted}</div><div class="l">Submitted +</div></div>
+  `;
+}
+
+function renderTagFilters(){
+  const el = document.getElementById('tagFilters');
+  el.innerHTML = ALL_TAGS.map(t=>`<div class="tag-pill ${activeTags.has(t)?'active':''}" data-tag="${t}">${t}</div>`).join('');
+  el.querySelectorAll('.tag-pill').forEach(p=>{
+    p.onclick = ()=>{
+      const t = p.dataset.tag;
+      activeTags.has(t) ? activeTags.delete(t) : activeTags.add(t);
+      renderTagFilters(); renderBoard();
+    };
+  });
+}
+
+function renderBoard(){
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const list = opportunities.filter(o=>{
+    const matchesQ = !q || o.name.toLowerCase().includes(q) || o.org.toLowerCase().includes(q) || o.desc.toLowerCase().includes(q);
+    const matchesTags = activeTags.size===0 || o.tags.some(t=>activeTags.has(t));
+    return matchesQ && matchesTags;
+  });
+  const board = document.getElementById('board');
+  if(list.length===0){
+    board.innerHTML = `<div class="empty"><div class="big">Nothing here yet</div>Add an opportunity or clear your filters.</div>`;
+    return;
+  }
+  board.innerHTML = list.map(o=>{
+    const days = daysUntil(o.deadline);
+    const dClass = deadlineClass(days);
+    const dLabel = days<0 ? 'Past deadline' : days===0 ? 'Due today' : `${days}d left`;
+    const rail = STAGES.map((s,i)=>`<div class="rail-dot ${i<o.stage?'done':''} ${i===o.stage?'current':''}" data-id="${o.id}" data-stage="${i}" title="${s}"></div>`).join('');
+    const eligDone = o.eligibility.filter(e=>e.done).length;
+    return `
+    <div class="card" data-id="${o.id}">
+      <div class="card-top">
+        <div class="rail">${rail}</div>
+        <div class="card-body" data-toggle="${o.id}">
+          <div class="card-head">
+            <div>
+              <p class="card-name">${o.name}</p>
+              <div class="card-org">${o.org}</div>
+            </div>
+            <div class="card-meta">
+              <div class="score ${scoreClass(o.score)}">${o.score}% match</div>
+              <div class="deadline-chip ${dClass}">${dLabel}</div>
+            </div>
+          </div>
+          <div class="card-tags">${o.tags.map(t=>`<span class="mini-tag">${t}</span>`).join('')}</div>
+          <div class="card-desc">${o.desc}</div>
+          <div class="stage-label">${STAGES[o.stage]} · ${eligDone}/${o.eligibility.length} eligibility items checked</div>
+        </div>
+      </div>
+      <div class="panel" id="panel-${o.id}">
+        <div class="panel-grid">
+          <div>
+            <h4>Eligibility checklist</h4>
+            <ul class="checklist" id="elig-${o.id}">
+              ${o.eligibility.map((e,i)=>`<li class="${e.done?'checked':''}"><input type="checkbox" data-id="${o.id}" data-i="${i}" data-kind="elig" ${e.done?'checked':''}><span>${e.t}</span></li>`).join('')}
+            </ul>
+            <h4 style="margin-top:16px;">Required documents</h4>
+            <ul class="checklist" id="docs-${o.id}">
+              ${o.docs.map((d,i)=>`<li class="${d.done?'checked':''}"><input type="checkbox" data-id="${o.id}" data-i="${i}" data-kind="docs" ${d.done?'checked':''}><span>${d.t}</span></li>`).join('')}
+            </ul>
+          </div>
+          <div>
+            <h4>Notes / AI-drafted answers</h4>
+            <textarea class="notes" data-id="${o.id}" placeholder="Draft application answers, mentor feedback, follow-up plans…">${o.notes}</textarea>
+            <div class="panel-actions">
+              <button class="btn" data-mail="${o.id}">✉ Compose follow-up</button>
+              <select class="btn" style="cursor:pointer;" data-stagesel="${o.id}">
+                ${STAGES.map((s,i)=>`<option value="${i}" ${i===o.stage?'selected':''}>${s}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // wire up interactions
+  board.querySelectorAll('[data-toggle]').forEach(el=>{
+    el.onclick = (e)=>{
+      if(e.target.closest('.checklist') || e.target.closest('textarea') || e.target.closest('button') || e.target.closest('select')) return;
+      const id = el.dataset.toggle;
+      document.getElementById('panel-'+id).classList.toggle('open');
+    };
+  });
+  board.querySelectorAll('.rail-dot').forEach(dot=>{
+    dot.onclick = (e)=>{
+      e.stopPropagation();
+      const o = opportunities.find(x=>x.id==dot.dataset.id);
+      o.stage = parseInt(dot.dataset.stage);
+      renderBoard(); renderStats();
+    };
+  });
+  board.querySelectorAll('input[type=checkbox][data-kind]').forEach(cb=>{
+    cb.onchange = ()=>{
+      const o = opportunities.find(x=>x.id==cb.dataset.id);
+      const arr = cb.dataset.kind==='elig' ? o.eligibility : o.docs;
+      arr[cb.dataset.i].done = cb.checked;
+      renderBoard(); renderStats();
+      // reopen panel after re-render
+      document.getElementById('panel-'+o.id).classList.add('open');
+    };
+  });
+  board.querySelectorAll('textarea.notes').forEach(ta=>{
+    ta.onblur = ()=>{
+      const o = opportunities.find(x=>x.id==ta.dataset.id);
+      o.notes = ta.value;
+    };
+  });
+  board.querySelectorAll('[data-stagesel]').forEach(sel=>{
+    sel.onchange = ()=>{
+      const o = opportunities.find(x=>x.id==sel.dataset.stagesel);
+      o.stage = parseInt(sel.value);
+      renderBoard(); renderStats();
+      document.getElementById('panel-'+o.id).classList.add('open');
+    };
+  });
+  board.querySelectorAll('[data-mail]').forEach(btn=>{
+    btn.onclick = ()=>{
+      const o = opportunities.find(x=>x.id==btn.dataset.mail);
+      openMail(o);
+    };
+  });
+}
+
+// ---------- Add modal ----------
+const overlay = document.getElementById('overlay');
+document.getElementById('addBtn').onclick = ()=>{
+  editingId = null;
+  document.getElementById('modalTitle').textContent = 'Add opportunity';
+  ['f_name','f_org','f_deadline','f_desc','f_elig','f_docs'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f_score').value = 70;
+  document.getElementById('f_stage').value = 0;
+  renderTagCheckboxes([]);
+  overlay.classList.add('open');
+};
+document.getElementById('cancelBtn').onclick = ()=> overlay.classList.remove('open');
+overlay.onclick = (e)=>{ if(e.target===overlay) overlay.classList.remove('open'); };
+
+function renderTagCheckboxes(selected){
+  document.getElementById('f_tags').innerHTML = ALL_TAGS.map(t=>`
+    <label><input type="checkbox" value="${t}" ${selected.includes(t)?'checked':''}><span>${t}</span></label>
+  `).join('');
+}
+
+document.getElementById('saveBtn').onclick = ()=>{
+  const name = document.getElementById('f_name').value.trim();
+  if(!name){ document.getElementById('f_name').focus(); return; }
+  const tags = Array.from(document.querySelectorAll('#f_tags input:checked')).map(i=>i.value);
+  const elig = document.getElementById('f_elig').value.split('\n').map(s=>s.trim()).filter(Boolean).map(t=>({t,done:false}));
+  const docs = document.getElementById('f_docs').value.split('\n').map(s=>s.trim()).filter(Boolean).map(t=>({t,done:false}));
+  const obj = {
+    id: editingId || Date.now(),
+    name, org: document.getElementById('f_org').value.trim(),
+    deadline: document.getElementById('f_deadline').value || new Date().toISOString().slice(0,10),
+    score: parseInt(document.getElementById('f_score').value)||0,
+    stage: parseInt(document.getElementById('f_stage').value),
+    tags, desc: document.getElementById('f_desc').value.trim(),
+    eligibility: elig.length?elig:[{t:'Review eligibility criteria',done:false}],
+    docs: docs.length?docs:[{t:'Gather required documents',done:false}],
+    notes:''
+  };
+  if(editingId){
+    opportunities = opportunities.map(o=>o.id===editingId?{...obj, notes:o.notes}:o);
+  } else {
+    opportunities.push(obj);
+  }
+  overlay.classList.remove('open');
+  renderBoard(); renderStats();
+};
+
+// ---------- Mail modal ----------
+const mailOverlay = document.getElementById('mailOverlay');
+function openMail(o){
+  mailOppId = o.id;
+  document.getElementById('mailOppName').textContent = o.name;
+  document.getElementById('m_to').value = '';
+  document.getElementById('m_subject').value = `Following up — ${o.name} application`;
+  document.getElementById('m_body').value = `Hi,\n\nI'm following up on my application to ${o.name} on behalf of SENSTACK OS, an AI-powered business operating system (RadioMeltdown is our flagship production app). I wanted to check on status and see if any additional materials would help move things forward.\n\nThanks for your time,\n`;
+  mailOverlay.classList.add('open');
+}
+document.getElementById('mailCancelBtn').onclick = ()=> mailOverlay.classList.remove('open');
+mailOverlay.onclick = (e)=>{ if(e.target===mailOverlay) mailOverlay.classList.remove('open'); };
+document.getElementById('mailSendBtn').onclick = ()=>{
+  const to = encodeURIComponent(document.getElementById('m_to').value.trim());
+  const subject = encodeURIComponent(document.getElementById('m_subject').value);
+  const body = encodeURIComponent(document.getElementById('m_body').value);
+  window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
+};
+
+document.getElementById('searchInput').oninput = renderBoard;
+
+renderTagFilters();
+renderStats();
+renderBoard();
+</script>
+</body>
+</html>
