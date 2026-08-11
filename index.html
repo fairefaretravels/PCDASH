@@ -618,6 +618,7 @@ const firebaseConfig = {
   appId: "1:859512329846:web:bd2a7ed89649f79ffa7157"
 };
 firebase.initializeApp(firebaseConfig);
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx2Z990whylhthzR9OtTrzQxCWqG3HTj86ZpoBzGXHoV7dhjns60jX1UMPNyHCSJMW6cQ/exec";
 const db = firebase.firestore();
 const storageRef = firebase.storage();
 
@@ -1096,22 +1097,124 @@ async function loadChat(){
   renderChat(msgs);
   return msgs;
 }
+
 async function sendChat(){
   const input = document.getElementById('chatInput');
   const text = input.value.trim();
   if(!text) return;
   if(!handle){ toast("Set your radio handle first"); return; }
+
   const msgs = await getVal('chat-messages', true, []);
-  msgs.push({id:"m-"+Date.now(), author:handle, text, ts:Date.now()});
+  msgs.push({
+    id:"m-"+Date.now(),
+    author:handle,
+    text,
+    ts:Date.now()
+  });
+
   while(msgs.length > 200) msgs.shift();
+
   await setVal('chat-messages', true, msgs);
+
   input.value = "";
   renderChat(msgs);
 }
+
+
+/* ================= GOOGLE SHEETS LEADS ================= */
+
+async function loadLeadsFromSheet(){
+  try{
+    const res = await fetch(APPS_SCRIPT_URL + "?sheet=Leads");
+    const data = await res.json();
+
+    if(data.error) throw new Error(data.error);
+
+    leads = data;
+    renderStats();
+    renderLeads();
+
+    document.getElementById('statusLine').textContent =
+      `${leads.length} leads loaded · synced via Google Sheets`;
+
+    return leads;
+
+  }catch(err){
+    console.error("Google Sheets lead load failed:", err);
+    toast("Could not load leads from Google Sheets");
+    return [];
+  }
+}
+
+async function saveLeadToSheet(lead){
+  try{
+    const res = await fetch(APPS_SCRIPT_URL,{
+      method:"POST",
+      headers:{
+        "Content-Type":"text/plain;charset=utf-8"
+      },
+      body:JSON.stringify({
+        sheet:"Leads",
+        action:"insert",
+        data:lead
+      })
+    });
+
+    const result = await res.json();
+
+    if(result.error) throw new Error(result.error);
+
+    return result;
+
+  }catch(err){
+    console.error("Google Sheets lead save failed:",err);
+    toast("Could not save lead");
+    throw err;
+  }
+}
+
+async function updateLeadInSheet(lead){
+  try{
+    const res = await fetch(APPS_SCRIPT_URL,{
+      method:"POST",
+      headers:{
+        "Content-Type":"text/plain;charset=utf-8"
+      },
+      body:JSON.stringify({
+        sheet:"Leads",
+        action:"update",
+        idField:"id",
+        data:lead
+      })
+    });
+
+    const result = await res.json();
+
+    if(result.error) throw new Error(result.error);
+
+    return result;
+
+  }catch(err){
+    console.error("Google Sheets lead update failed:",err);
+    toast("Could not update lead");
+    throw err;
+  }
+}
+
+
+/* ================= CHAT EVENTS ================= */
+
 document.getElementById('sendChatBtn').addEventListener('click', sendChat);
-document.getElementById('chatInput').addEventListener('keydown', e=>{ if(e.key==='Enter') sendChat(); });
+
+document.getElementById('chatInput').addEventListener('keydown', e=>{
+  if(e.key==='Enter') sendChat();
+});
+
 setInterval(async ()=>{
-  if(document.getElementById('panel-radio').classList.contains('active') && document.visibilityState==='visible'){
+  if(
+    document.getElementById('panel-radio').classList.contains('active') &&
+    document.visibilityState==='visible'
+  ){
     await loadChat();
   }
 }, 4000);
