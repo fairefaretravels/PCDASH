@@ -12,8 +12,8 @@
  *    Copy the /exec URL into API_URL in index.html.
  */
 
-const SHEET_ID = 'PASTE_YOUR_GOOGLE_SHEET_ID_HERE';
-const DRIVE_FOLDER_ID = 'PASTE_YOUR_DRIVE_FOLDER_ID_HERE'; // folder for vendor files
+const SHEET_ID = '1EuNyBbcoQkQuZK7wPMJ4-LVnX8NT2XKT81DOeD_fQjo';
+const DRIVE_FOLDER_ID = '1xbPZYJHmYwcpDhsajQs54nlz_iAjIVHU';
 
 /* ================= WEB APP ENTRY POINTS ================= */
 
