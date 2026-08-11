@@ -1,1 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Opportunity Pipeline — Final Clean Division</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#19181a; --panel:#231f1c; --panel-2:#2a2521;
+    --paper:#ece5d3; --paper-2:#e2d9c2;
+    --orange:#e8590c; --orange-dim:#a8420c; --yellow:#f0b429;
+    --blue:#4c7f9e; --green:#4f8a5b; --red:#b23b3b;
+    --text:#f2ede2; --text-dim:#b8ada0; --text-dark:#221f1a;
+    --line:#3a332c; --radius:3px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ink);background-image:repeating-linear-gradient(45deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 12px);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;}
+  .wrap{max-width:1100px;margin:0 auto;padding:18px 16px 60px;}
+  .clip{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px 16px;margin-bottom:14px;overflow:hidden;}
+  .clip::before{content:"";position:absolute;top:0;left:0;right:0;height:5px;background:repeating-linear-gradient(90deg,var(--yellow) 0 16px,var(--ink) 16px 32px);opacity:.85;}
+  .clip-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:6px;}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;color:var(--orange);text-transform:uppercase;}
+  h1{font-family:'Oswald',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-size:28px;margin:2px 0 0;color:var(--text);}
+  .sub{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-dim);margin-top:6px;}
+  .tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
+  .tab-btn{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.05em;font-size:13px;font-weight:600;padding:10px 16px;background:var(--panel);border:1px solid var(--line);border-bottom:3px solid var(--line);color:var(--text-dim);cursor:pointer;border-radius:var(--radius) var(--radius) 0 0;transition:all .12s ease;}
+  .tab-btn:hover{color:var(--text);border-color:#4a423a;}
+  .tab-btn.active{color:var(--ink);background:var(--orange);border-color:var(--orange);border-bottom:3px solid var(--yellow);}
+  .panel{display:none;} .panel.active{display:block;animation:fade .15s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(2px);}to{opacity:1;transform:none;}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px;}
+  .stat-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+  .stat{flex:1 1 90px;background:var(--panel-2);border:1px solid var(--line);border-radius:var(--radius);padding:9px 10px;text-align:center;}
+  .stat b{display:block;font-family:'Oswald',sans-serif;font-size:20px;color:var(--yellow);}
+  .stat span{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.06em;color:var(--text-dim);text-transform:uppercase;}
+  .toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;}
+  input[type=text], input[type=search], select, textarea{font-family:'Inter',sans-serif;background:var(--paper);color:var(--text-dark);border:1px solid #cfc6ae;border-radius:var(--radius);padding:8px 10px;font-size:13px;}
+  .toolbar input[type=search]{flex:1;min-width:160px;}
+  button{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.04em;font-weight:600;font-size:12.5px;background:var(--orange);color:var(--ink);border:none;border-radius:var(--radius);padding:9px 14px;cursor:pointer;transition:background .12s;}
+  button:hover{background:#ff6a1e;}
+  button.ghost{background:transparent;border:1px solid var(--line);color:var(--text-dim);}
+  button.ghost:hover{color:var(--text);border-color:#5a5148;}
+  button.small{padding:5px 9px;font-size:11px;}
+  .muted{color:var(--text-dim);font-family:'IBM Plex Mono',monospace;font-size:11.5px;}
 
+  /* stage board */
+  .stage-board{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;}
+  @media(max-width:900px){.stage-board{grid-template-columns:1fr 1fr;}}
+  @media(max-width:560px){.stage-board{grid-template-columns:1fr;}}
+  .stage-col{background:var(--panel-2);border:1px solid var(--line);border-radius:var(--radius);padding:8px;min-height:60px;}
+  .stage-head{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.04em;font-size:12px;color:var(--text-dim);display:flex;justify-content:space-between;align-items:center;padding:4px 4px 8px;border-bottom:1px solid var(--line);margin-bottom:8px;}
+  .stage-head b{color:var(--yellow);font-family:'IBM Plex Mono',monospace;font-size:11px;}
+  .stage-col[data-stage="Won"] .stage-head{color:var(--green);}
+  .stage-col[data-stage="Lost"] .stage-head{color:var(--red);}
+  .opp-card{background:var(--paper);color:var(--text-dark);border-radius:var(--radius);padding:9px 10px;margin-bottom:8px;border-left:3px solid var(--orange);}
+  .opp-name{font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;text-transform:uppercase;}
+  .opp-meta{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#6b6255;margin-top:2px;}
+  .opp-value{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--orange-dim);font-weight:600;margin-top:4px;}
+  .opp-next{font-size:11.5px;margin-top:4px;color:#3a352c;font-style:italic;}
+  .opp-row2{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap;}
+  .opp-row2 select{flex:1;font-size:10px;padding:4px 5px;}
+  .opp-row2 input{flex:1;font-size:10px;padding:4px 5px;min-width:0;}
+  .opp-empty{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#7a7266;text-align:center;padding:10px 0;}
+
+  .script-card{background:var(--paper);color:var(--text-dark);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px;border-left:4px solid var(--blue);}
+  .script-title{font-family:'Oswald',sans-serif;font-size:15px;font-weight:600;text-transform:uppercase;letter-spacing:.02em;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;}
+  .script-tag{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;}
+  .opener{font-size:13.5px;line-height:1.55;margin-top:8px;font-style:italic;color:#3a352c;}
+  .pushback{margin-top:12px;padding-top:10px;border-top:1px dashed #cfc6ae;}
+  .pushback-label{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--red);margin-bottom:4px;}
+  .pushback-line{font-size:13px;font-style:italic;color:#4a4335;margin-bottom:4px;}
+  .response-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--green);margin-top:8px;margin-bottom:3px;}
+  .response-line{font-size:13.5px;line-height:1.5;color:#221f1a;background:#f2ecd9;border-radius:3px;padding:8px 10px;}
+
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--yellow);color:var(--text-dark);font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;padding:9px 16px;border-radius:var(--radius);opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;z-index:50;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-4px);}
+  .menu-btn{background:var(--panel-2);border:1px solid var(--line);color:var(--text);padding:9px 11px;border-radius:var(--radius);display:flex;flex-direction:column;gap:3px;justify-content:center;align-items:center;cursor:pointer;}
+  .menu-btn span{display:block;width:18px;height:2px;background:var(--text-dim);border-radius:1px;}
+  .menu-btn:hover span{background:var(--orange);}
+  .menu-overlay{position:fixed;inset:0;background:rgba(10,9,8,.7);display:none;z-index:100;align-items:flex-start;justify-content:flex-end;}
+  .menu-overlay.show{display:flex;}
+  .menu-panel{width:min(300px,84vw);height:100%;background:var(--panel);border-left:1px solid var(--line);padding:18px 16px;overflow-y:auto;animation:slideIn .16s ease;}
+  @keyframes slideIn{from{transform:translateX(16px);opacity:0;}to{transform:none;opacity:1;}}
+  .menu-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .menu-title{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.06em;font-size:13px;color:var(--text-dim);}
+  .menu-close{background:transparent;border:1px solid var(--line);color:var(--text-dim);padding:5px 9px;font-size:14px;}
+  .menu-close:hover{color:var(--text);border-color:#5a5148;}
+  .menu-group-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--orange-dim);margin:14px 0 6px;}
+  .menu-link{display:flex;flex-direction:column;gap:2px;padding:10px 11px;background:var(--panel-2);border:1px solid var(--line);border-radius:var(--radius);color:var(--text);text-decoration:none;margin-bottom:7px;}
+  .menu-link:hover{border-color:var(--orange);}
+  .menu-link.current{border-left:3px solid var(--orange);background:#332c25;}
+  .menu-link b{font-family:'Oswald',sans-serif;font-size:13.5px;text-transform:uppercase;letter-spacing:.01em;}
+  .menu-link small{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="clip">
+    <div class="clip-top">
+      <div>
+        <div class="eyebrow">Final Clean Division — Opportunity Pipeline</div>
+        <h1>Opportunities</h1>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="sub" id="statusLine">loading…</div>
+        <div class="menu-btn" id="menuBtn" aria-label="Open menu"><span></span><span></span><span></span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="menu-overlay" id="menuOverlay">
+    <div class="menu-panel">
+      <div class="menu-head">
+        <div class="menu-title">All Tools</div>
+        <button class="menu-close" id="menuCloseBtn">✕</button>
+      </div>
+      <div class="menu-group-label">Ops Board</div>
+      <a class="menu-link" href="../index.html"><b>Site Ops Board</b><small>index.html</small></a>
+      <div class="menu-group-label">Sales Pipeline</div>
+      <a class="menu-link" href="../LEADS/index.html"><b>Lead Engine</b><small>LEADS/index.html — push leads here when Interested/Won</small></a>
+      <a class="menu-link current" href="../OPPORTUNITY/index.html"><b>Opportunity Pipeline</b><small>OPPORTUNITY/index.html — this page</small></a>
+      <a class="menu-link" href="../PAIN-POINTS/index.html"><b>Pain-Point Library</b><small>PAIN-POINTS/index.html</small></a>
+      <div class="menu-group-label">Crew</div>
+      <a class="menu-link" href="../employee.html"><b>Crew App</b><small>employee.html</small></a>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="board">Pipeline Board</button>
+    <button class="tab-btn" data-tab="scripts">Closing Scripts</button>
+  </div>
+
+  <!-- ================= BOARD ================= -->
+  <div class="panel active" id="panel-board">
+    <div class="card">
+      <div class="muted" style="margin-bottom:10px;">This board is fed by the Lead Engine — a lead only shows up here after it's marked Interested/Won and pushed over. Drag a deal forward by changing its stage on the card.</div>
+      <div class="stat-row" id="statRow"></div>
+      <div class="stage-board" id="stageBoard"></div>
+    </div>
+  </div>
+
+  <!-- ================= SCRIPTS ================= -->
+  <div class="panel" id="panel-scripts">
+    <div class="card">
+      <div class="muted" style="margin-bottom:8px;">Use these once a lead is a live opportunity — proposal in hand, price on the table, or a deal that's gone quiet. Every script has a comeback for the first no.</div>
+      <div class="toolbar">
+        <span class="muted">Proposal, negotiation &amp; close</span>
+        <button class="ghost small" id="addScriptBtn">+ Add script</button>
+      </div>
+      <div id="addScriptForm" style="display:none;" class="card">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+          <input type="text" id="nsTitle" placeholder="Script title">
+          <input type="text" id="nsTag" placeholder="Tag (e.g. Negotiation)">
+          <textarea id="nsBody" placeholder="Opening line…" style="grid-column:1/-1;min-height:70px;"></textarea>
+        </div>
+        <button id="saveScriptBtn">Save script</button>
+        <button class="ghost" id="cancelScriptBtn">Cancel</button>
+      </div>
+      <div id="scriptList"></div>
+    </div>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "process.env.REACT_APP_API_KEY",
+  authDomain: "tripn-7177f.firebaseapp.com",
+  projectId: "tripn-7177f",
+  storageBucket: "tripn-7177f.firebasestorage.app",
+  messagingSenderId: "859512329846",
+  appId: "1:859512329846:web:bd2a7ed89649f79ffa7157"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+async function getVal(key, shared, fallback){
+  try{ const doc = await db.collection('kv').doc(key).get(); return doc.exists ? JSON.parse(doc.data().value) : fallback; }
+  catch(e){ console.error("getVal failed", key, e); return fallback; }
+}
+async function setVal(key, shared, value){
+  try{ await db.collection('kv').doc(key).set({value: JSON.stringify(value), updatedAt: Date.now()}); }
+  catch(e){ console.error("storage set failed", key, e); }
+}
+
+const STAGES = ["Qualified","Proposal Sent","Negotiating","Won","Lost"];
+let opportunities = [];
+let scripts = [];
+
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1800); }
+function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+const menuOverlay = document.getElementById('menuOverlay');
+document.getElementById('menuBtn').addEventListener('click', ()=> menuOverlay.classList.add('show'));
+document.getElementById('menuCloseBtn').addEventListener('click', ()=> menuOverlay.classList.remove('show'));
+menuOverlay.addEventListener('click', (e)=>{ if(e.target===menuOverlay) menuOverlay.classList.remove('show'); });
+
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ============ CLOSING SCRIPTS SEED ============ */
+const OPP_SCRIPTS_SEED = [
+{id:"os1", title:"Proposal Follow-Up (48 Hours)", tag:"Proposal Sent",
+ opener:"Hi [Name], following up on the proposal I sent Tuesday — wanted to make sure it landed and see what questions came up on your end. I'd rather answer them now than have them sit and slow things down.",
+ chain:[
+   {pushback:"“Haven't had a chance to look yet.”",
+    response:"“No worries — while I've got you, want me to walk the top three lines with you right now? Takes two minutes and you'll have everything you need before you even open it.”"},
+   {pushback:"“We're comparing a couple of options.”",
+    response:"“Smart move, you should. One thing worth knowing while you compare: our price includes a 48-hour re-clean guarantee — nobody wants a surprise on their price sheet. Happy to send that comparison sheet if it helps.”"}
+ ]},
+{id:"os2", title:"Holding Your Price in Negotiation", tag:"Negotiating",
+ opener:"“Can you come down on price?”",
+ chain:[
+   {pushback:"(their opening ask)",
+    response:"“I want to earn your business, so let's find the right fit instead of just cutting the number. What if we hold the price but adjust the scope — say, every other turn instead of every one — so the budget works without cutting corners on quality?”"},
+   {pushback:"“We really need a lower number, not a smaller scope.”",
+    response:"“Understood — here's what I can do: lock in this rate for a 6-month volume commitment. You get the discount, we get predictable work, and neither of us is guessing month to month. Does that work on your end?”"},
+   {pushback:"“Still too rich for us right now.”",
+    response:"“I respect that, and I'd rather you say so than take a bad deal. Let's stay in touch — when the budget opens up, this offer's still on the table, first call's yours.”"}
+ ]},
+{id:"os3", title:"Assumptive Close", tag:"Ready to close",
+ opener:"“Everything looks good — should I go ahead and get you on the schedule for next Monday, or would the following week work better?”",
+ chain:[
+   {pushback:"“I need to run this by my partner/boss first.”",
+    response:"“Makes sense — want me to put together a one-pager with the scope and price so it's an easy yes for them? I can have it in your inbox in ten minutes, and we can pencil in Monday provisionally so we don't lose the slot.”"},
+   {pushback:"“Not quite ready to commit to a date.”",
+    response:"“Totally fine — what would need to be true for you to feel ready? If it's a reference from a client like you, I can get you one by tomorrow.”"}
+ ]},
+{id:"os4", title:"Win-Back — Opportunity Gone Quiet", tag:"Stalled deal",
+ opener:"Hi [Name], it's been a few weeks since we last talked about final cleaning for [Company] — didn't want you to think I'd forgotten about you. Is this still something worth revisiting, or has the timing shifted?",
+ chain:[
+   {pushback:"“We went with someone else.”",
+    response:"“Appreciate you letting me know — genuinely. If it doesn't work out the way you hoped, or you need overflow help down the line, the door's open. Mind if I check back in a few months?”"},
+   {pushback:"“It's just not a priority right now.”",
+    response:"“Got it. I'll set a reminder to reach back out next quarter — in the meantime I'll send over one case study so you've got it on hand whenever the timing's right.”"}
+ ]}
+];
+
+function stageValueSum(stage){
+  return opportunities.filter(o=>o.stage===stage).reduce((sum,o)=>{
+    const v = parseFloat((o.value||"").replace(/[^0-9.]/g,''));
+    return sum + (isNaN(v)?0:v);
+  },0);
+}
+function renderStats(){
+  const won = opportunities.filter(o=>o.stage==="Won").length;
+  const open = opportunities.filter(o=>o.stage!=="Won" && o.stage!=="Lost").length;
+  const wonValue = stageValueSum("Won");
+  const row = document.getElementById('statRow');
+  row.innerHTML = `
+    <div class="stat"><b>${opportunities.length}</b><span>Total Deals</span></div>
+    <div class="stat"><b>${open}</b><span>Open</span></div>
+    <div class="stat"><b>${won}</b><span>Won</span></div>
+    <div class="stat"><b>$${wonValue.toLocaleString()}</b><span>Won Value</span></div>`;
+}
+function renderBoard(){
+  const board = document.getElementById('stageBoard');
+  board.innerHTML = "";
+  STAGES.forEach(stage=>{
+    const col = document.createElement('div');
+    col.className = "stage-col";
+    col.dataset.stage = stage;
+    const deals = opportunities.filter(o=>o.stage===stage);
+    col.innerHTML = `<div class="stage-head">${stage} <b>${deals.length}</b></div><div class="stage-body"></div>`;
+    const body = col.querySelector('.stage-body');
+    if(!deals.length){
+      body.innerHTML = `<div class="opp-empty">No deals</div>`;
+    }
+    deals.forEach(o=>{
+      const card = document.createElement('div');
+      card.className = "opp-card";
+      card.innerHTML = `
+        <div class="opp-name">${escapeHtml(o.company)}</div>
+        <div class="opp-meta">${escapeHtml(o.type||"—")}${o.area?` · ${escapeHtml(o.area)}`:""}</div>
+        ${o.nextStep?`<div class="opp-next">Next: ${escapeHtml(o.nextStep)}</div>`:""}
+        <div class="opp-row2">
+          <input type="text" data-value="${o.id}" placeholder="Deal value $" value="${escapeHtml(o.value||"")}">
+          <select data-stage="${o.id}">${STAGES.map(s=>`<option ${s===o.stage?"selected":""}>${s}</option>`).join("")}</select>
+        </div>
+        <div class="opp-row2">
+          <input type="text" data-next="${o.id}" placeholder="Next step" value="${escapeHtml(o.nextStep||"")}">
+        </div>`;
+      body.appendChild(card);
+    });
+    board.appendChild(col);
+  });
+  board.querySelectorAll('[data-stage]').forEach(sel=>{
+    sel.addEventListener('change', async ()=>{
+      const o = opportunities.find(x=>x.id===sel.dataset.stage);
+      o.stage = sel.value;
+      await setVal('opportunity-data', true, opportunities);
+      renderStats(); renderBoard();
+    });
+  });
+  board.querySelectorAll('[data-value]').forEach(inp=>{
+    inp.addEventListener('change', async ()=>{
+      const o = opportunities.find(x=>x.id===inp.dataset.value);
+      o.value = inp.value.trim();
+      await setVal('opportunity-data', true, opportunities);
+      renderStats();
+    });
+  });
+  board.querySelectorAll('[data-next]').forEach(inp=>{
+    inp.addEventListener('change', async ()=>{
+      const o = opportunities.find(x=>x.id===inp.dataset.next);
+      o.nextStep = inp.value.trim();
+      await setVal('opportunity-data', true, opportunities);
+      renderBoard();
+    });
+  });
+}
+
+function renderScripts(){
+  const list = document.getElementById('scriptList');
+  list.innerHTML = "";
+  scripts.forEach(s=>{
+    const card = document.createElement('div');
+    card.className = "script-card";
+    let chainHtml = "";
+    if(s.chain && s.chain.length){
+      chainHtml = s.chain.map((step,i)=>`
+        <div class="pushback">
+          <div class="pushback-label">If they push back ${i+1}</div>
+          <div class="pushback-line">${escapeHtml(step.pushback)}</div>
+          <div class="response-label">Your response</div>
+          <div class="response-line">${escapeHtml(step.response)}</div>
+        </div>`).join("");
+    }
+    card.innerHTML = `
+      <div class="script-title"><span>${escapeHtml(s.title)}</span><button class="small" data-copy="${s.id}">Copy opener</button></div>
+      <div class="script-tag">${escapeHtml(s.tag)}</div>
+      <div class="opener">"${escapeHtml(s.opener)}"</div>
+      ${chainHtml}`;
+    list.appendChild(card);
+  });
+  list.querySelectorAll('[data-copy]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const s = scripts.find(x=>x.id===btn.dataset.copy);
+      navigator.clipboard?.writeText(s.opener).then(()=>toast("Copied to clipboard")).catch(()=>toast("Copy failed"));
+    });
+  });
+}
+document.getElementById('addScriptBtn').addEventListener('click', ()=>{ document.getElementById('addScriptForm').style.display='block'; });
+document.getElementById('cancelScriptBtn').addEventListener('click', ()=>{ document.getElementById('addScriptForm').style.display='none'; });
+document.getElementById('saveScriptBtn').addEventListener('click', async ()=>{
+  const title = document.getElementById('nsTitle').value.trim();
+  const body = document.getElementById('nsBody').value.trim();
+  if(!title || !body){ toast("Title and opening line required"); return; }
+  scripts.unshift({id:"os-"+Date.now(), title, tag:document.getElementById('nsTag').value.trim()||"Custom", opener:body, chain:[]});
+  await setVal('opportunity-scripts-library', true, scripts);
+  ['nsTitle','nsTag','nsBody'].forEach(id=>document.getElementById(id).value="");
+  document.getElementById('addScriptForm').style.display='none';
+  renderScripts();
+  toast("Script saved");
+});
+
+async function init(){
+  let o = await getVal('opportunity-data', true, null);
+  opportunities = o || [];
+  renderStats(); renderBoard();
+
+  let s = await getVal('opportunity-scripts-library', true, null);
+  if(!s){ s = OPP_SCRIPTS_SEED; await setVal('opportunity-scripts-library', true, s); }
+  scripts = s;
+  renderScripts();
+
+  document.getElementById('statusLine').textContent = `${opportunities.length} opportunities · fed from Lead Engine`;
+}
+init();
+
+// live-refresh the board if leads get pushed over from the Lead Engine tab
+setInterval(async ()=>{
+  if(document.getElementById('panel-board').classList.contains('active') && document.visibilityState==='visible'){
+    const o = await getVal('opportunity-data', true, []);
+    if(JSON.stringify(o)!==JSON.stringify(opportunities)){ opportunities=o; renderStats(); renderBoard(); }
+  }
+}, 6000);
+</script>
+</body>
+</html>
