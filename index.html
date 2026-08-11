@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -602,7 +602,25 @@
 </div>
 <div class="toast" id="toast"></div>
 
+<!-- Firebase SDKs (compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-storage-compat.js"></script>
+
 <script>
+/* ================= FIREBASE INIT ================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyAO4cniAn_qkjL7nUfqKZbyXbhiokdoafg",
+  authDomain: "tripn-7177f.firebaseapp.com",
+  projectId: "tripn-7177f",
+  storageBucket: "tripn-7177f.firebasestorage.app",
+  messagingSenderId: "859512329846",
+  appId: "1:859512329846:web:bd2a7ed89649f79ffa7157"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const storageRef = firebase.storage();
+
 /* ================= SEED DATA ================= */
 const LEADS_SEED = [
 ["Craftworks Construction","Custom Homes / Remodeling","",""],
@@ -718,16 +736,23 @@ const DEMO_LOCATIONS = [
   {employeeId:"demo-3", name:"DeShawn Carter", role:"Lead", lat:33.7925, lng:-84.3021, accuracy:18, ts: Date.now()-1000*60*1}
 ];
 
-/* ================= STORAGE HELPERS ================= */
+/* ================= STORAGE HELPERS (Firestore) =================
+   Simple key/value doc storage in the "kv" collection — mirrors the
+   old get/set/delete API so the rest of the app didn't need rewriting.
+   Single-user tool, so the old "shared" flag is accepted but ignored. */
 async function getVal(key, shared, fallback){
   try{
-    const r = await window.storage.get(key, shared);
-    return r ? JSON.parse(r.value) : fallback;
-  }catch(e){ return fallback; }
+    const doc = await db.collection('kv').doc(key).get();
+    return doc.exists ? JSON.parse(doc.data().value) : fallback;
+  }catch(e){ console.error("getVal failed", key, e); return fallback; }
 }
 async function setVal(key, shared, value){
-  try{ await window.storage.set(key, JSON.stringify(value), shared); }
+  try{ await db.collection('kv').doc(key).set({value: JSON.stringify(value), updatedAt: Date.now()}); }
   catch(e){ console.error("storage set failed", key, e); }
+}
+async function delVal(key, shared){
+  try{ await db.collection('kv').doc(key).delete(); }
+  catch(e){ console.error("storage delete failed", key, e); }
 }
 
 let leads = [];
@@ -947,11 +972,12 @@ document.getElementById('clearDemoBtn').addEventListener('click', async ()=>{
   const msgs = await getVal('chat-messages', true, []);
   const cleaned = msgs.filter(m=>!m.id || !m.id.startsWith('demo-'));
   await setVal('chat-messages', true, cleaned);
-  for(const loc of DEMO_LOCATIONS){ await delVal('live-location-'+loc.employeeId, true); }
+  for(const loc of DEMO_LOCATIONS){
+    try{ await db.collection('locations').doc(loc.employeeId).delete(); }catch(e){}
+  }
   renderCrewStats(); renderCrew(); loadChat(); loadGps();
   toast("Demo data cleared");
 });
-async function delVal(key, shared){ try{ await window.storage.delete(key, shared); }catch(e){} }
 document.getElementById('cancelCrewBtn').addEventListener('click', ()=>{
   document.getElementById('addCrewForm').style.display='none';
 });
@@ -980,19 +1006,19 @@ document.getElementById('saveCrewBtn').addEventListener('click', async ()=>{
   toast("Employee added");
 });
 
-/* ================= GPS ================= */
+/* ================= GPS =================
+   Live positions live in their own Firestore collection ("locations"),
+   one doc per employeeId, instead of prefixed kv keys — Firestore
+   doesn't support listing docs by ID prefix, so a real collection is
+   the natural fit. The Crew App (employee.html) writes to this same
+   collection when a crew member shares their location. */
 async function loadGps(){
-  const idx = await window.storage.list('live-location-', true).catch(()=>null);
-  const keys = (idx && idx.keys) ? idx.keys : [];
-  const rows = [];
-  for(const k of keys){
-    try{
-      const r = await window.storage.get(k, true);
-      if(r) rows.push(JSON.parse(r.value));
-    }catch(e){}
-  }
-  rows.sort((a,b)=>b.ts-a.ts);
-  renderGps(rows);
+  try{
+    const snap = await db.collection('locations').get();
+    const rows = snap.docs.map(d=>d.data());
+    rows.sort((a,b)=>b.ts-a.ts);
+    renderGps(rows);
+  }catch(e){ console.error("loadGps failed", e); renderGps([]); }
 }
 function renderGps(rows){
   const statRow = document.getElementById('gpsStatRow');
@@ -1090,26 +1116,31 @@ setInterval(async ()=>{
   }
 }, 4000);
 
-/* ================= VENDOR FILES ================= */
+/* ================= VENDOR FILES =================
+   File bytes go to Firebase Storage (not Firestore — Firestore caps
+   documents at 1MB, which a base64 3.5MB file would blow past).
+   Only the lightweight metadata + download URL live in the
+   "vendor-files-index" kv doc. */
 document.getElementById('dropzone').addEventListener('click', ()=>document.getElementById('fileInput').click());
 document.getElementById('fileInput').addEventListener('change', async (e)=>{
   const file = e.target.files[0];
   if(!file) return;
   if(file.size > 3.5*1024*1024){ toast("File too large — 3.5MB limit"); e.target.value=""; return; }
-  const reader = new FileReader();
-  reader.onload = async ()=>{
-    const id = "f-"+Date.now();
-    try{
-      await window.storage.set('vendor-file-'+id, reader.result, true);
-      const index = await getVal('vendor-files-index', true, []);
-      index.unshift({id, name:file.name, type:file.type||"file", size:file.size, addedBy: handle||"unknown", ts:Date.now()});
-      await setVal('vendor-files-index', true, index);
-      renderFiles(index);
-      toast("File uploaded");
-    }catch(err){ toast("Upload failed — try a smaller file"); }
-    e.target.value = "";
-  };
-  reader.readAsDataURL(file);
+  const id = "f-"+Date.now();
+  try{
+    const ref = storageRef.ref().child('vendor-files/'+id+'-'+file.name);
+    await ref.put(file);
+    const url = await ref.getDownloadURL();
+    const index = await getVal('vendor-files-index', true, []);
+    index.unshift({id, name:file.name, type:file.type||"file", size:file.size, url, addedBy: handle||"unknown", ts:Date.now()});
+    await setVal('vendor-files-index', true, index);
+    renderFiles(index);
+    toast("File uploaded");
+  }catch(err){
+    console.error("upload failed", err);
+    toast("Upload failed — check Storage rules");
+  }
+  e.target.value = "";
 });
 function fileBadge(type){
   if(type.includes('pdf')) return 'PDF';
@@ -1132,20 +1163,8 @@ function renderFiles(index){
         <div class="file-name">${escapeHtml(f.name)}</div>
         <div class="file-meta">${fmtSize(f.size)} · added by ${escapeHtml(f.addedBy)} · ${new Date(f.ts).toLocaleDateString()}</div>
       </div>
-      <button class="small ghost" data-id="${f.id}" data-name="${escapeHtml(f.name)}">View</button>`;
+      <a class="small ghost" style="text-decoration:none;display:inline-block;" target="_blank" href="${f.url}">View</a>`;
     list.appendChild(row);
-  });
-  list.querySelectorAll('button[data-id]').forEach(btn=>{
-    btn.addEventListener('click', async ()=>{
-      try{
-        const r = await window.storage.get('vendor-file-'+btn.dataset.id, true);
-        const a = document.createElement('a');
-        a.href = r.value;
-        a.download = btn.dataset.name;
-        a.target = "_blank";
-        document.body.appendChild(a); a.click(); a.remove();
-      }catch(e){ toast("Couldn't load file"); }
-    });
   });
 }
 
@@ -1210,10 +1229,14 @@ async function init(){
   // demo chat + demo gps pins (only if channel is empty)
   let ch = await getVal('chat-messages', true, null);
   if(ch === null || ch.length === 0){ await setVal('chat-messages', true, DEMO_CHAT.slice()); }
-  const gpsExisting = await window.storage.list('live-location-', true).catch(()=>null);
-  if(!gpsExisting || !gpsExisting.keys || gpsExisting.keys.length === 0){
-    for(const loc of DEMO_LOCATIONS){ await setVal('live-location-'+loc.employeeId, true, loc); }
-  }
+  try{
+    const gpsExisting = await db.collection('locations').limit(1).get();
+    if(gpsExisting.empty){
+      for(const loc of DEMO_LOCATIONS){
+        await db.collection('locations').doc(loc.employeeId).set(loc);
+      }
+    }
+  }catch(e){ console.error("gps seed check failed", e); }
 
   // gps
   startGpsPolling();
@@ -1226,7 +1249,7 @@ async function init(){
   await loadHandle();
   await loadChat();
 
-  document.getElementById('statusLine').textContent = `${leads.length} leads loaded · shared with your team`;
+  document.getElementById('statusLine').textContent = `${leads.length} leads loaded · synced via Firebase`;
 }
 init();
 </script>
