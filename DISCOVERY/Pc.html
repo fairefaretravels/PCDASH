@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0b0d12">
+<title>Business Pain Point Discovery</title>
+<style>
+:root{
+  --bg:#0b0d12; --panel:#131722; --panel2:#1a1f2b; --text:#f5f7fb;
+  --muted:#9aa4b5; --line:#293142; --accent:#7c5cff; --accent2:#a993ff;
+  --danger:#ff667d; --ok:#42d392;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+body{padding-bottom:env(safe-area-inset-bottom)}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+.app{width:min(760px,100%);margin:auto;padding:20px 16px 40px}
+.header{padding:18px 2px 20px}
+.eyebrow{font-size:12px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--accent2);margin-bottom:9px}
+h1{font-size:clamp(28px,7vw,46px);line-height:1.02;margin:0 0 10px;letter-spacing:-.04em}
+.sub{color:var(--muted);line-height:1.55;font-size:15px;max-width:650px}
+.progress-wrap{position:sticky;top:0;z-index:10;background:rgba(11,13,18,.92);backdrop-filter:blur(14px);padding:10px 0 14px}
+.progress-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:7px}
+.progress{height:6px;background:#222838;border-radius:99px;overflow:hidden}
+.progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .25s ease}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:20px;margin-top:16px;box-shadow:0 12px 40px rgba(0,0,0,.16)}
+.step{display:none;animation:fade .2s ease}
+.step.active{display:block}
+@keyframes fade{from{opacity:.3;transform:translateY(5px)}to{opacity:1;transform:none}}
+.step-num{font-size:12px;color:var(--accent2);font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px}
+h2{font-size:25px;line-height:1.15;margin:0 0 8px}
+.help{font-size:14px;color:var(--muted);line-height:1.5;margin-bottom:20px}
+label{display:block;font-size:14px;font-weight:700;margin:0 0 8px}
+.field{margin:16px 0}
+input[type=text],input[type=email],input[type=tel],input[type=url],textarea,select{
+ width:100%;background:#0e121a;color:var(--text);border:1px solid var(--line);
+ border-radius:13px;padding:14px;outline:none;transition:.15s;
+}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,92,255,.13)}
+textarea{min-height:120px;resize:vertical}
+.options{display:grid;gap:10px}
+.option{position:relative}
+.option input{position:absolute;opacity:0;pointer-events:none}
+.option label{
+ background:#0e121a;border:1px solid var(--line);padding:14px 15px;border-radius:13px;
+ color:#dce1eb;font-weight:600;cursor:pointer;transition:.15s;
+}
+.option input:checked + label{border-color:var(--accent);background:rgba(124,92,255,.12);color:#fff}
+.option label:hover{border-color:#4a5366}
+.check-grid{display:grid;gap:10px}
+.error{color:var(--danger);font-size:13px;margin-top:10px;display:none}
+.nav{display:flex;gap:10px;margin-top:16px}
+.nav button{border:0;border-radius:13px;padding:14px 18px;font-weight:800}
+.back{background:#202633;color:#fff}
+.next,.submit{background:var(--accent);color:#fff;flex:1}
+.next:hover,.submit:hover{filter:brightness(1.08)}
+.back:disabled{opacity:.35;cursor:not-allowed}
+.small{font-size:12px;color:var(--muted);margin-top:12px;line-height:1.45}
+.results{display:none}
+.result-box{background:#0e121a;border:1px solid var(--line);border-radius:16px;padding:16px;margin-top:12px}
+.result-box h3{margin:0 0 8px;font-size:15px}
+.result-box pre{white-space:pre-wrap;word-break:break-word;color:#dce1eb;font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;margin:0}
+.actions{display:grid;gap:10px;margin-top:16px}
+.actions button{padding:14px;border:0;border-radius:13px;font-weight:800}
+.download{background:var(--ok);color:#07130d}
+.copy{background:#252c3a;color:#fff}
+.restart{background:#202633;color:#fff}
+.required{color:var(--danger)}
+@media(min-width:600px){
+ .options{grid-template-columns:1fr 1fr}
+ .check-grid{grid-template-columns:1fr 1fr}
+ .actions{grid-template-columns:1fr 1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <div class="eyebrow">Business Discovery</div>
+    <h1>What’s working — and what’s getting in the way?</h1>
+    <div class="sub">A short discovery questionnaire to understand the systems, tools, and processes businesses rely on today — and the problems they wish someone would fix.</div>
+  </header>
+
+  <div class="progress-wrap">
+    <div class="progress-meta"><span id="progressLabel">Question 1 of 9</span><span id="progressPct">11%</span></div>
+    <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+  </div>
+
+  <form id="survey">
+    <section class="card step active" data-step="1">
+      <div class="step-num">01 · Business</div><h2>Tell us about the business.</h2>
+      <div class="help">We’re looking for patterns across different types of businesses.</div>
+      <div class="field"><label>Business name <span class="required">*</span></label><input name="businessName" required placeholder="Your business"></div>
+      <div class="field"><label>What type of business is it? <span class="required">*</span></label><input name="industry" required placeholder="Restaurant, salon, contractor, agency, retail..."></div>
+      <div class="field"><label>Your role <span class="required">*</span></label><input name="role" required placeholder="Owner, manager, operations, sales..."></div>
+      <div class="field"><label>How many people use your business systems?</label><select name="teamSize"><option value="">Select one</option><option>Just me</option><option>2–5</option><option>6–15</option><option>16–50</option><option>51–100</option><option>100+</option></select></div>
+      <div class="nav"><button type="button" class="back" disabled>Back</button><button type="button" class="next">Continue</button></div>
+    </section>
+
+    <section class="card step" data-step="2">
+      <div class="step-num">02 · Current system</div><h2>What systems do you rely on every day?</h2>
+      <div class="help">Think software, apps, spreadsheets, websites, POS systems, CRMs, scheduling tools, accounting tools, or custom systems.</div>
+      <div class="field"><label>What is your main system or platform?</label><input name="mainSystem" placeholder="e.g. Square, QuickBooks, Salesforce, paper, spreadsheets..."></div>
+      <div class="field"><label>What other tools are part of the workflow?</label><textarea name="otherTools" placeholder="List the tools or describe the process."></textarea></div>
+      <div class="field"><label>How long have you used your main system?</label><select name="systemAge"><option value="">Select one</option><option>Less than 6 months</option><option>6–12 months</option><option>1–3 years</option><option>3–5 years</option><option>5+ years</option></select></div>
+      <div class="nav"><button type="button" class="back">Back</button><button type="button" class="next">Continue</button></div>
+    </section>
+
+    <section class="card step" data-step="3">
+      <div class="step-num">03 · The good stuff</div><h2>What do you LOVE about your current system?</h2>
+      <div class="help">What makes you say, “This is why we keep using it”?</div>
+      <div class="field"><label>Pick everything that applies.</label>
+        <div class="check-grid">
+          <div class="option"><input type="checkbox" name="loves" value="Easy to use" id="l1"><label for="l1">Easy to use</label></div>
+          <div class="option"><input type="checkbox" name="loves" value="Reliable" id="l2"><label for="l2">Reliable</label></div>
+          <div class="option"><input type="checkbox" name="loves" value="Saves time" id="l3"><label for="l3">Saves time</label></div>
+          <div class="option"><input type="checkbox" name="loves" value="Good reporting" id="l4"><label for="l4">Good reporting</label></div>
+          <div class="option"><input type="checkbox" name="loves" value="Integrations" id="l5"><label for="l5">Integrations</label></div>
+          <div class="option"><input type="checkbox" name="loves" value="Customer support" id="l6"><label for="l6">Customer support</label></div>
+        </div>
+      </div>
+      <div class="field"><label>What is the BEST thing your current system does?</label><textarea name="bestThing" placeholder="Tell us in your own words."></textarea></div>
+      <div class="nav"><button type="button" class="back">Back</button><button type="button" class="next">Continue</button></div>
+    </section>
+
+    <section class="card step" data-step="4">
+      <div class="step-num">04 · Friction</div><h2>Where does the current system fall short?</h2>
+      <div class="help">Be specific. Small annoyances are useful because they often reveal bigger workflow problems.</div>
+      <div class="field"><label>What frustrates you most?</label><textarea name="frustrations" placeholder="Something you constantly have to work around..."></textarea></div>
+      <div class="field"><label>How often does this problem happen?</label>
+        <div class="options">
+          <div class="option"><input type="radio" name="frequency" value="Daily" id="f1"><label for="f1">Every day</label></div>
+          <div class="option"><input type="radio" name="frequency" value="Weekly" id="f2"><label for="f2">A few times a week</label></div>
+          <div class="option"><input type="radio" name="frequency" value="Monthly" id="f3"><label for="f3">A few times a month</label></div>
+          <div class="option"><input type="radio" name="frequency" value="Occasionally" id="f4"><label for="f4">Occasionally</label></div>
+        </div>
+      </div>
+      <div class="nav"><button type="button" class="back">Back</button><button type="button" class="next">Continue</button></div>
+    </section>
+
+    <section class="card step" data-step="5">
+      <div class="step-num">05 · Wish list</div><h2>If you could add anything, what would you want?</h2>
+      <div class="help">This is the most important question. Don’t worry about whether the feature exists yet.</div>
+      <div class="field"><label>What do you wish your current system could do?</label><textarea name="wishList" required placeholder="“I wish it would automatically…”"></textarea></div>
+      <div class="field"><label>Would automation help?</label>
+        <div class="options">
+          <div class="option"><input type="radio" name="automation" value="Definitely" id="a1"><label for="a1">Absolutely</label></div>
+          <div class="option"><input type="radio" name="automation" value="Maybe" id="a2"><label for="a2">Maybe</label></div>
+          <div class="option"><input type="radio" name="automation" value="Not really" id="a3"><label for="a3">Not really</label></div>
+        </div>
+      </div>
+      <div class="nav"><button type="button" class="back">Back</button><button type="button" class="next">Continue</button></div>
+    </section>
+
+    <section class="card step" data-step="6">
+      <div class="step-num">06 · Manual work</div><h2>What are you still doing manually?</h2>
+      <div class="help">Manual entry, copying information, texting customers, chasing payments, scheduling, reports — anything counts.</div>
+      <div class="field"><label>What repetitive tasks take the most time?</label><textarea name="manualTasks" placeholder="Describe the task and roughly how often you do it."></textarea></div>
+      <div class="field"><label>What information gets entered more than once?</label><textarea name="duplicateEntry" placeholder="Customer info, orders, appointments, invoices, leads..."></textarea></div>
+      <div class="nav"><button type="button" class="back">Back</button><button type="button" class="next">Continue</button></div>
+    </section>
+
+    <section class="card step" data-step="7">
+      <div class="step-num">07 · Business impact</div><h2>What does the problem cost you?</h2>
+      <div class="help">A rough answer is fine. We’re trying to understand impact, not audit your books.</div>
+      <div class="field"><label>Where does the friction show up?</label>
+        <div class="check-grid">
+          <div class="option"><input type="checkbox" name="impact" value="Lost time" id="i1"><label for="i1">Lost time</label></div>
+          <div class="option"><input type="checkbox" name="impact" value="Lost sales" id="i2"><label for="i2">Lost sales</label></div>
+          <div class="option"><input type="checkbox" name="impact" value="Missed leads" id="i3"><label for="i3">Missed leads</label></div>
+          <div class="option"><input type="checkbox" name="impact" value="Customer frustration" id="i4"><label for="i4">Customer frustration</label></div>
+          <div class="option"><input type="checkbox" name="impact" value="Employee frustration" id="i5"><label for="i5">Employee frustration</label></div>
+          <div class="option"><input type="checkbox" name="impact" value="Errors/rework" id="i6"><label for="i6">Errors / rework</label></div>
+        </div>
+      </div>
+      <div class="field"><label>Roughly how much time could you save each week if this were fixed?</label><select name="timeSaved"><option value="">Select one</option><option>Less than 1 hour</option><option>1–3 hours</option><option>4–10 hours</option><option>11–20 hours</option><option>20+ hours</option><option>Not sure</option></select></div>
+      <div class="nav"><button type="button" class="back">Back</button><button type="button" class="next">Continue</button></div>
+    </section>
+
+    <section class="card step" data-step="8">
+      <div class="step-num">08 · The one fix</div><h2>If someone could fix ONE thing tomorrow, what would it be?</h2>
+      <div class="help">Forget everything else. What single improvement would make the biggest difference?</div>
+      <div class="field"><label>Your answer <span class="required">*</span></label><textarea name="oneFix" required placeholder="If you could wave a magic wand..."></textarea></div>
+      <div class="field"><label>Would you consider testing a better version if it solved this problem?</label>
+        <div class="options">
+          <div class="option"><input type="radio" name="pilot" value="Yes" id="p1"><label for="p1">Yes, I’d test it</label></div>
+          <div class="option"><input type="radio" name="pilot" value="Maybe" id="p2"><label for="p2">Maybe — tell me more</label></div>
+          <div class="option"><input type="radio" name="pilot" value="No" id="p3"><label for="p3">No, just sharing feedback</label></div>
+        </div>
+      </div>
+      <div class="nav"><button type="button" class="back">Back</button><button type="button" class="next">Continue</button></div>
+    </section>
+
+    <section class="card step" data-step="9">
+      <div class="step-num">09 · Optional follow-up</div><h2>Want us to follow up?</h2>
+      <div class="help">Leave your contact information only if you’re open to discussing the problem you described. You can submit anonymously.</div>
+      <div class="field"><label>Name</label><input name="contactName" placeholder="Your name"></div>
+      <div class="field"><label>Email</label><input type="email" name="email" placeholder="you@business.com"></div>
+      <div class="field"><label>Phone</label><input type="tel" name="phone" placeholder="Optional"></div>
+      <div class="field"><label>Anything else we should know?</label><textarea name="notes" placeholder="Anything about your workflow, customers, or goals."></textarea></div>
+      <div class="nav"><button type="button" class="back">Back</button><button type="submit" class="submit">Finish Questionnaire</button></div>
+      <div class="small">Your answers stay in this browser until you download or copy them. This standalone version does not send data to a server.</div>
+    </section>
+  </form>
+
+  <section class="card results" id="results">
+    <div class="step-num">Complete</div>
+    <h2>Discovery captured.</h2>
+    <div class="help">Your responses have been organized into a shareable report.</div>
+    <div class="result-box"><h3>Quick read</h3><pre id="summary"></pre></div>
+    <div class="actions">
+      <button class="download" id="downloadBtn">Download Results</button>
+      <button class="copy" id="copyBtn">Copy Results</button>
+      <button class="restart" id="restartBtn">Start Over</button>
+    </div>
+  </section>
+</div>
+
+<script>
+const form = document.getElementById('survey');
+const steps = [...document.querySelectorAll('.step')];
+const results = document.getElementById('results');
+const bar = document.getElementById('progressBar');
+const label = document.getElementById('progressLabel');
+const pct = document.getElementById('progressPct');
+let current = 0;
+
+function showStep(i){
+  current = Math.max(0, Math.min(i, steps.length-1));
+  steps.forEach((s,n)=>s.classList.toggle('active',n===current));
+  const percent = Math.round(((current+1)/steps.length)*100);
+  bar.style.width = percent + '%';
+  label.textContent = `Question ${current+1} of ${steps.length}`;
+  pct.textContent = percent + '%';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function validStep(){
+  const active = steps[current];
+  const required = [...active.querySelectorAll('[required]')];
+  for(const el of required){
+    if(!el.value.trim()){
+      el.focus();
+      alert('Please complete the required field before continuing.');
+      return false;
+    }
+  }
+  return true;
+}
+
+document.querySelectorAll('.next').forEach(btn=>btn.addEventListener('click',()=>{
+  if(validStep()) showStep(current+1);
+}));
+document.querySelectorAll('.back').forEach(btn=>btn.addEventListener('click',()=>{
+  if(current>0) showStep(current-1);
+}));
+
+function values(name){
+  return [...form.querySelectorAll(`[name="${name}"]:checked`)].map(x=>x.value);
+}
+function val(name){
+  const el=form.elements[name];
+  return el ? el.value.trim() : '';
+}
+function report(){
+  return `BUSINESS PAIN POINT DISCOVERY
+Generated: ${new Date().toLocaleString()}
+
+BUSINESS
+Business: ${val('businessName')}
+Industry: ${val('industry')}
+Role: ${val('role')}
+Team size: ${val('teamSize') || 'Not provided'}
+
+CURRENT SYSTEM
+Main system: ${val('mainSystem') || 'Not provided'}
+Other tools/workflow:
+${val('otherTools') || 'Not provided'}
+Time using system: ${val('systemAge') || 'Not provided'}
+
+WHAT THEY LOVE
+Loved features: ${values('loves').join(', ') || 'Not selected'}
+Best thing:
+${val('bestThing') || 'Not provided'}
+
+PAIN POINTS
+Main frustrations:
+${val('frustrations') || 'Not provided'}
+Frequency: ${val('frequency') || 'Not provided'}
+
+WISH LIST
+What they wish it could do:
+${val('wishList') || 'Not provided'}
+Automation: ${val('automation') || 'Not provided'}
+
+MANUAL WORK
+Repetitive tasks:
+${val('manualTasks') || 'Not provided'}
+Duplicate information entry:
+${val('duplicateEntry') || 'Not provided'}
+
+BUSINESS IMPACT
+Impact areas: ${values('impact').join(', ') || 'Not selected'}
+Potential weekly time savings: ${val('timeSaved') || 'Not provided'}
+
+THE ONE FIX
+Biggest desired fix:
+${val('oneFix') || 'Not provided'}
+Open to testing a better version: ${val('pilot') || 'Not provided'}
+
+FOLLOW-UP
+Name: ${val('contactName') || 'Not provided'}
+Email: ${val('email') || 'Not provided'}
+Phone: ${val('phone') || 'Not provided'}
+Additional notes:
+${val('notes') || 'Not provided'}
+`;
+}
+
+form.addEventListener('submit',e=>{
+  e.preventDefault();
+  if(!validStep()) return;
+  const text=report();
+  document.getElementById('summary').textContent=text;
+  form.style.display='none';
+  document.querySelector('.progress-wrap').style.display='none';
+  results.style.display='block';
+  results.scrollIntoView({behavior:'smooth'});
+});
+
+document.getElementById('downloadBtn').addEventListener('click',()=>{
+  const blob=new Blob([report()],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');
+  const slug=(val('businessName')||'business-discovery').toLowerCase().replace(/[^a-z0-9]+/g,'-');
+  a.href=URL.createObjectURL(blob);
+  a.download=`${slug}-pain-point-discovery.txt`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+document.getElementById('copyBtn').addEventListener('click',async()=>{
+  try{
+    await navigator.clipboard.writeText(report());
+    const b=document.getElementById('copyBtn');
+    b.textContent='Copied!';
+    setTimeout(()=>b.textContent='Copy Results',1500);
+  }catch(e){alert('Copy failed. Select the results manually instead.');}
+});
+
+document.getElementById('restartBtn').addEventListener('click',()=>{
+  form.reset();
+  form.style.display='';
+  document.querySelector('.progress-wrap').style.display='';
+  results.style.display='none';
+  showStep(0);
+});
+
+showStep(0);
+</script>
+</body>
+</html>
