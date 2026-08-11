@@ -200,6 +200,7 @@ const firebaseConfig = {
   appId: "1:859512329846:web:bd2a7ed89649f79ffa7157"
 };
 firebase.initializeApp(firebaseConfig);
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx2Z990whylhthzR9OtTrzQxCWqG3HTj86ZpoBzGXHoV7dhjns60jX1UMPNyHCSJMW6cQ/exec"; 
 const db = firebase.firestore();
 
 async function getVal(key, shared, fallback){
@@ -273,140 +274,584 @@ const LEAD_SCRIPTS_SEED = [
  ]}
 ];
 
+<script>
+/* ================= LEAD STATS ================= */
 function renderStats(){
-  const c = {New:0,Called:0,"No Answer":0,Interested:0,"Not Now":0,Won:0,Lost:0};
-  leads.forEach(l=>{ if(c[l.status]!==undefined) c[l.status]++; });
+  const c = {
+    New: 0,
+    Called: 0,
+    "No Answer": 0,
+    Interested: 0,
+    "Not Now": 0,
+    Won: 0,
+    Lost: 0
+  };
+  leads.forEach(l=>{
+    if(c[l.status] !== undefined){
+      c[l.status]++;
+    }
+  });
   const row = document.getElementById('statRow');
   row.innerHTML = "";
   ["New","Called","No Answer","Interested","Not Now","Won"].forEach(k=>{
-    row.innerHTML += `<div class="stat"><b>${c[k]||0}</b><span>${k}</span></div>`;
+    row.innerHTML += `
+      <div class="stat">
+        <b>${c[k] || 0}</b>
+        <span>${k}</span>
+      </div>
+    `;
   });
-  row.innerHTML += `<div class="stat"><b>${leads.length}</b><span>Total</span></div>`;
+  row.innerHTML += `
+    <div class="stat">
+      <b>${leads.length}</b>
+      <span>Total</span>
+    </div>
+  `;
 }
+/* ================= LEADS ================= */
 function renderLeads(){
-  const q = document.getElementById('leadSearch').value.trim().toLowerCase();
-  const f = document.getElementById('statusFilter').value;
-  const list = document.getElementById('leadList');
+  const q =
+    document.getElementById('leadSearch')
+      .value
+      .trim()
+      .toLowerCase();
+  const f =
+    document.getElementById('statusFilter').value;
+  const list =
+    document.getElementById('leadList');
   const filtered = leads.filter(l=>{
-    const matchQ = !q || (l.company+" "+l.type+" "+l.area).toLowerCase().includes(q);
-    const matchF = !f || l.status===f;
+    const searchText =
+      `${l.company || ""} ${l.type || ""} ${l.area || ""}`
+        .toLowerCase();
+    const matchQ =
+      !q || searchText.includes(q);
+    const matchF =
+      !f || l.status === f;
     return matchQ && matchF;
   });
   list.innerHTML = "";
-  if(!filtered.length){ list.innerHTML = `<div class="muted" style="padding:10px 0;">No leads match.</div>`; return; }
+  if(!filtered.length){
+    list.innerHTML = `
+      <div class="muted" style="padding:10px 0;">
+        No leads match.
+      </div>
+    `;
+    return;
+  }
   filtered.forEach((l,idx)=>{
-    const row = document.createElement('div');
+    const row =
+      document.createElement('div');
     row.className = "lead-row";
     row.dataset.status = l.status;
-    const eligible = (l.status==="Interested" || l.status==="Won");
+    const eligible =
+      l.status === "Interested" ||
+      l.status === "Won";
     row.innerHTML = `
-      <div class="lead-num">${idx+1}</div>
+      <div class="lead-num">
+        ${idx + 1}
+      </div>
       <div class="lead-main">
-        <div class="lead-name">${escapeHtml(l.company)}</div>
-        <div class="lead-meta">${escapeHtml(l.type||"—")}${l.phone?` · <a href="tel:${l.phone.replace(/[^0-9+]/g,'')}">${escapeHtml(l.phone)}</a>`:""}${l.area?` · ${escapeHtml(l.area)}`:""}</div>
+        <div class="lead-name">
+          ${escapeHtml(l.company)}
+        </div>
+        <div class="lead-meta">
+          ${escapeHtml(l.type || "—")}
+          ${
+            l.phone
+              ? ` · <a href="tel:${l.phone.replace(/[^0-9+]/g,'')}">
+                   ${escapeHtml(l.phone)}
+                 </a>`
+              : ""
+          }
+          ${
+            l.area
+              ? ` · ${escapeHtml(l.area)}`
+              : ""
+          }
+        </div>
       </div>
       <div class="lead-actions">
-        <select data-id="${l.id}" class="statusSel">
-          ${["New","Called","No Answer","Interested","Not Now","Won","Lost"].map(s=>`<option ${s===l.status?"selected":""}>${s}</option>`).join("")}
+        <select
+          data-id="${l.id}"
+          class="statusSel"
+        >
+          ${
+            [
+              "New",
+              "Called",
+              "No Answer",
+              "Interested",
+              "Not Now",
+              "Won",
+              "Lost"
+            ]
+            .map(s=>`
+              <option
+                ${s === l.status ? "selected" : ""}
+              >
+                ${s}
+              </option>
+            `)
+            .join("")
+          }
         </select>
-        ${eligible ? `<button class="small push-btn" data-push="${l.id}">${l.pushedToOpportunity?"Pushed ✓":"Push to Opportunity"}</button>` : ""}
-      </div>`;
+        ${
+          eligible
+            ? `
+              <button
+                class="small push-btn"
+                data-push="${l.id}"
+              >
+                ${
+                  l.pushedToOpportunity
+                    ? "Pushed ✓"
+                    : "Push to Opportunity"
+                }
+              </button>
+            `
+            : ""
+        }
+      </div>
+    `;
     list.appendChild(row);
   });
-  list.querySelectorAll('.statusSel').forEach(sel=>{
-    sel.addEventListener('change', async ()=>{
-      const lead = leads.find(l=>l.id===sel.dataset.id);
-      lead.status = sel.value;
-      await setVal('leads-data', true, leads);
-      renderStats(); renderLeads();
+  /* ================= STATUS UPDATE ================= */
+  list
+    .querySelectorAll('.statusSel')
+    .forEach(sel=>{
+      sel.addEventListener(
+        'change',
+        async ()=>{
+          const lead =
+            leads.find(
+              l => l.id === sel.dataset.id
+            );
+          if(!lead) return;
+          lead.status = sel.value;
+          try{
+            await updateLeadInSheet(lead);
+            renderStats();
+            renderLeads();
+            toast("Lead status updated");
+          }catch(err){
+            console.error(
+              "Lead status update failed:",
+              err
+            );
+          }
+        }
+      );
     });
-  });
-  list.querySelectorAll('[data-push]').forEach(btn=>{
-    btn.addEventListener('click', async ()=>{
-      const lead = leads.find(l=>l.id===btn.dataset.push);
-      const opps = await getVal('opportunity-data', true, []);
-      if(!opps.find(o=>o.leadId===lead.id)){
-        opps.unshift({id:"opp-"+Date.now(), leadId:lead.id, company:lead.company, type:lead.type, phone:lead.phone, area:lead.area, stage:"Qualified", value:"", nextStep:"", notes:"", createdAt:Date.now()});
-        await setVal('opportunity-data', true, opps);
-      }
-      lead.pushedToOpportunity = true;
-      await setVal('leads-data', true, leads);
-      renderLeads();
-      toast("Sent to Opportunity Pipeline");
+  /* ================= OPPORTUNITY PUSH ================= */
+  list
+    .querySelectorAll('[data-push]')
+    .forEach(btn=>{
+      btn.addEventListener(
+        'click',
+        async ()=>{
+          const lead =
+            leads.find(
+              l => l.id === btn.dataset.push
+            );
+          if(!lead) return;
+          try{
+            const opps =
+              await getVal(
+                'opportunity-data',
+                true,
+                []
+              );
+            if(
+              !opps.find(
+                o => o.leadId === lead.id
+              )
+            ){
+              opps.unshift({
+                id:
+                  "opp-" +
+                  Date.now(),
+                leadId:
+                  lead.id,
+                company:
+                  lead.company,
+                type:
+                  lead.type,
+                phone:
+                  lead.phone,
+                area:
+                  lead.area,
+                stage:
+                  "Qualified",
+                value:
+                  "",
+                nextStep:
+                  "",
+                notes:
+                  "",
+                createdAt:
+                  Date.now()
+              });
+              await setVal(
+                'opportunity-data',
+                true,
+                opps
+              );
+            }
+            lead.pushedToOpportunity = true;
+            /*
+             * Lead itself is stored in Google Sheets.
+             * Update the Sheets record instead of Firebase.
+             */
+            await updateLeadInSheet(lead);
+            renderLeads();
+            toast(
+              "Sent to Opportunity Pipeline"
+            );
+          }catch(err){
+            console.error(
+              "Opportunity push failed:",
+              err
+            );
+            toast(
+              "Could not push opportunity"
+            );
+          }
+        }
+      );
     });
-  });
 }
-document.getElementById('leadSearch').addEventListener('input', renderLeads);
-document.getElementById('statusFilter').addEventListener('change', renderLeads);
-document.getElementById('addLeadBtn').addEventListener('click', ()=>{ document.getElementById('addLeadForm').style.display='block'; });
-document.getElementById('cancelLeadBtn').addEventListener('click', ()=>{ document.getElementById('addLeadForm').style.display='none'; });
-document.getElementById('saveLeadBtn').addEventListener('click', async ()=>{
-  const company = document.getElementById('nlCompany').value.trim();
-  if(!company){ toast("Company name required"); return; }
-  leads.unshift({ id:"l-"+Date.now(), company, type:document.getElementById('nlType').value.trim(), phone:document.getElementById('nlPhone').value.trim(), area:document.getElementById('nlArea').value.trim(), status:"New", notes:"" });
-  await setVal('leads-data', true, leads);
-  ['nlCompany','nlType','nlPhone','nlArea'].forEach(id=>document.getElementById(id).value="");
-  document.getElementById('addLeadForm').style.display='none';
-  renderStats(); renderLeads();
-  toast("Lead added");
-});
-
+/* ================= LEAD SEARCH ================= */
+document
+  .getElementById('leadSearch')
+  .addEventListener(
+    'input',
+    renderLeads
+  );
+document
+  .getElementById('statusFilter')
+  .addEventListener(
+    'change',
+    renderLeads
+  );
+/* ================= ADD LEAD ================= */
+document
+  .getElementById('addLeadBtn')
+  .addEventListener(
+    'click',
+    ()=>{
+      document
+        .getElementById('addLeadForm')
+        .style.display = 'block';
+    }
+  );
+document
+  .getElementById('cancelLeadBtn')
+  .addEventListener(
+    'click',
+    ()=>{
+      document
+        .getElementById('addLeadForm')
+        .style.display = 'none';
+    }
+  );
+document
+  .getElementById('saveLeadBtn')
+  .addEventListener(
+    'click',
+    async ()=>{
+      const company =
+        document
+          .getElementById('nlCompany')
+          .value
+          .trim();
+      if(!company){
+        toast(
+          "Company name required"
+        );
+        return;
+      }
+      const newLead = {
+        id:
+          "l-" +
+          Date.now(),
+        company:
+          company,
+        type:
+          document
+            .getElementById('nlType')
+            .value
+            .trim(),
+        phone:
+          document
+            .getElementById('nlPhone')
+            .value
+            .trim(),
+        area:
+          document
+            .getElementById('nlArea')
+            .value
+            .trim(),
+        status:
+          "New",
+        notes:
+          ""
+      };
+      try{
+        /*
+         * Save the lead directly to Google Sheets.
+         */
+        await saveLeadToSheet(
+          newLead
+        );
+        /*
+         * Add it locally so the dashboard
+         * updates immediately.
+         */
+        leads.unshift(
+          newLead
+        );
+        [
+          'nlCompany',
+          'nlType',
+          'nlPhone',
+          'nlArea'
+        ].forEach(id=>{
+          document
+            .getElementById(id)
+            .value = "";
+        });
+        document
+          .getElementById('addLeadForm')
+          .style.display = 'none';
+        renderStats();
+        renderLeads();
+        toast(
+          "Lead added to Google Sheets"
+        );
+      }catch(err){
+        console.error(
+          "Save lead failed:",
+          err
+        );
+        toast(
+          "Lead was not saved"
+        );
+      }
+    }
+  );
+/* ================= SALES SCRIPTS ================= */
 function renderScripts(){
-  const list = document.getElementById('scriptList');
+  const list =
+    document.getElementById(
+      'scriptList'
+    );
   list.innerHTML = "";
   scripts.forEach(s=>{
-    const card = document.createElement('div');
-    card.className = "script-card";
+    const card =
+      document.createElement('div');
+    card.className =
+      "script-card";
     let chainHtml = "";
-    if(s.chain && s.chain.length){
-      chainHtml = s.chain.map((step,i)=>`
-        <div class="pushback">
-          <div class="pushback-label">If they push back ${i+1}</div>
-          <div class="pushback-line">${escapeHtml(step.pushback)}</div>
-          <div class="response-label">Your response</div>
-          <div class="response-line">${escapeHtml(step.response)}</div>
-        </div>`).join("");
+    if(
+      s.chain &&
+      s.chain.length
+    ){
+      chainHtml =
+        s.chain
+          .map((step,i)=>`
+            <div class="pushback">
+              <div class="pushback-label">
+                If they push back ${i + 1}
+              </div>
+              <div class="pushback-line">
+                ${escapeHtml(step.pushback)}
+              </div>
+              <div class="response-label">
+                Your response
+              </div>
+              <div class="response-line">
+                ${escapeHtml(step.response)}
+              </div>
+            </div>
+          `)
+          .join("");
     }
     card.innerHTML = `
-      <div class="script-title"><span>${escapeHtml(s.title)}</span><button class="small" data-copy="${s.id}">Copy opener</button></div>
-      <div class="script-tag">${escapeHtml(s.tag)}</div>
-      <div class="opener">"${escapeHtml(s.opener)}"</div>
-      ${chainHtml}`;
+      <div class="script-title">
+        <span>
+          ${escapeHtml(s.title)}
+        </span>
+        <button
+          class="small"
+          data-copy="${s.id}"
+        >
+          Copy opener
+        </button>
+      </div>
+      <div class="script-tag">
+        ${escapeHtml(s.tag)}
+      </div>
+      <div class="opener">
+        "${escapeHtml(s.opener)}"
+      </div>
+      ${chainHtml}
+    `;
     list.appendChild(card);
   });
-  list.querySelectorAll('[data-copy]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const s = scripts.find(x=>x.id===btn.dataset.copy);
-      navigator.clipboard?.writeText(s.opener).then(()=>toast("Copied to clipboard")).catch(()=>toast("Copy failed"));
+  list
+    .querySelectorAll('[data-copy]')
+    .forEach(btn=>{
+      btn.addEventListener(
+        'click',
+        ()=>{
+          const s =
+            scripts.find(
+              x =>
+                x.id === btn.dataset.copy
+            );
+          navigator
+            .clipboard
+            ?.writeText(
+              s.opener
+            )
+            .then(
+              ()=>toast(
+                "Copied to clipboard"
+              )
+            )
+            .catch(
+              ()=>toast(
+                "Copy failed"
+              )
+            );
+        }
+      );
     });
-  });
 }
-document.getElementById('addScriptBtn').addEventListener('click', ()=>{ document.getElementById('addScriptForm').style.display='block'; });
-document.getElementById('cancelScriptBtn').addEventListener('click', ()=>{ document.getElementById('addScriptForm').style.display='none'; });
-document.getElementById('saveScriptBtn').addEventListener('click', async ()=>{
-  const title = document.getElementById('nsTitle').value.trim();
-  const body = document.getElementById('nsBody').value.trim();
-  if(!title || !body){ toast("Title and opening line required"); return; }
-  scripts.unshift({id:"ls-"+Date.now(), title, tag:document.getElementById('nsTag').value.trim()||"Custom", opener:body, chain:[]});
-  await setVal('leads-scripts-library', true, scripts);
-  ['nsTitle','nsTag','nsBody'].forEach(id=>document.getElementById(id).value="");
-  document.getElementById('addScriptForm').style.display='none';
-  renderScripts();
-  toast("Script saved");
-});
-
+/* ================= ADD SCRIPT ================= */
+document
+  .getElementById('addScriptBtn')
+  .addEventListener(
+    'click',
+    ()=>{
+      document
+        .getElementById('addScriptForm')
+        .style.display = 'block';
+    }
+  );
+document
+  .getElementById('cancelScriptBtn')
+  .addEventListener(
+    'click',
+    ()=>{
+      document
+        .getElementById('addScriptForm')
+        .style.display = 'none';
+    }
+  );
+document
+  .getElementById('saveScriptBtn')
+  .addEventListener(
+    'click',
+    async ()=>{
+      const title =
+        document
+          .getElementById('nsTitle')
+          .value
+          .trim();
+      const body =
+        document
+          .getElementById('nsBody')
+          .value
+          .trim();
+      if(!title || !body){
+        toast(
+          "Title and opening line required"
+        );
+        return;
+      }
+      scripts.unshift({
+        id:
+          "ls-" +
+          Date.now(),
+        title:
+          title,
+        tag:
+          document
+            .getElementById('nsTag')
+            .value
+            .trim() ||
+          "Custom",
+        opener:
+          body,
+        chain:
+          []
+      });
+      await setVal(
+        'leads-scripts-library',
+        true,
+        scripts
+      );
+      [
+        'nsTitle',
+        'nsTag',
+        'nsBody'
+      ].forEach(id=>{
+        document
+          .getElementById(id)
+          .value = "";
+      });
+      document
+        .getElementById('addScriptForm')
+        .style.display = 'none';
+      renderScripts();
+      toast(
+        "Script saved"
+      );
+    }
+  );
+/* ================= INITIALIZE ================= */
 async function init(){
-  let l = await getVal('leads-data', true, null);
-  if(!l){ l = []; }
-  leads = l;
-  renderStats(); renderLeads();
-
-  let s = await getVal('leads-scripts-library', true, null);
-  if(!s){ s = LEAD_SCRIPTS_SEED; await setVal('leads-scripts-library', true, s); }
+  /*
+   * LEADS
+   *
+   * Leads now come from Google Sheets.
+   * We no longer load or seed leads through Firebase.
+   */
+  await loadLeadsFromSheet();
+  /*
+   * SALES SCRIPTS
+   *
+   * Scripts remain on Firebase.
+   */
+  let s =
+    await getVal(
+      'leads-scripts-library',
+      true,
+      null
+    );
+  if(!s){
+    s =
+      LEAD_SCRIPTS_SEED;
+    await setVal(
+      'leads-scripts-library',
+      true,
+      s
+    );
+  }
   scripts = s;
   renderScripts();
-
-  document.getElementById('statusLine').textContent = `${leads.length} leads · synced with Ops Board`;
+  /*
+   * STATUS
+   */
+  const statusLine =
+    document.getElementById(
+      'statusLine'
+    );
+  if(statusLine){
+    statusLine.textContent =
+      `${leads.length} leads · synced with Google Sheets`;
+  }
 }
 init();
 </script>
