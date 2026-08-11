@@ -1,1 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pain-Point Library — Final Clean Division</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#19181a; --panel:#231f1c; --panel-2:#2a2521;
+    --paper:#ece5d3; --paper-2:#e2d9c2;
+    --orange:#e8590c; --orange-dim:#a8420c; --yellow:#f0b429;
+    --blue:#4c7f9e; --green:#4f8a5b; --red:#b23b3b;
+    --text:#f2ede2; --text-dim:#b8ada0; --text-dark:#221f1a;
+    --line:#3a332c; --radius:3px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ink);background-image:repeating-linear-gradient(45deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 12px);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;}
+  .wrap{max-width:1000px;margin:0 auto;padding:18px 16px 60px;}
+  .clip{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px 16px;margin-bottom:14px;overflow:hidden;}
+  .clip::before{content:"";position:absolute;top:0;left:0;right:0;height:5px;background:repeating-linear-gradient(90deg,var(--yellow) 0 16px,var(--ink) 16px 32px);opacity:.85;}
+  .clip-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:6px;}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;color:var(--orange);text-transform:uppercase;}
+  h1{font-family:'Oswald',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-size:28px;margin:2px 0 0;color:var(--text);}
+  .sub{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-dim);margin-top:6px;}
+  .tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
+  .tab-btn{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.05em;font-size:13px;font-weight:600;padding:10px 16px;background:var(--panel);border:1px solid var(--line);border-bottom:3px solid var(--line);color:var(--text-dim);cursor:pointer;border-radius:var(--radius) var(--radius) 0 0;transition:all .12s ease;}
+  .tab-btn:hover{color:var(--text);border-color:#4a423a;}
+  .tab-btn.active{color:var(--ink);background:var(--orange);border-color:var(--orange);border-bottom:3px solid var(--yellow);}
+  .panel{display:none;} .panel.active{display:block;animation:fade .15s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(2px);}to{opacity:1;transform:none;}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px;}
+  .toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;}
+  input[type=text], select, textarea{font-family:'Inter',sans-serif;background:var(--paper);color:var(--text-dark);border:1px solid #cfc6ae;border-radius:var(--radius);padding:8px 10px;font-size:13px;}
+  button{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.04em;font-weight:600;font-size:12.5px;background:var(--orange);color:var(--ink);border:none;border-radius:var(--radius);padding:9px 14px;cursor:pointer;transition:background .12s;}
+  button:hover{background:#ff6a1e;}
+  button.ghost{background:transparent;border:1px solid var(--line);color:var(--text-dim);}
+  button.ghost:hover{color:var(--text);border-color:#5a5148;}
+  button.small{padding:5px 9px;font-size:11px;}
+  .muted{color:var(--text-dim);font-family:'IBM Plex Mono',monospace;font-size:11.5px;}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+  .form-grid textarea{grid-column:1/-1;min-height:70px;font-family:'Inter',sans-serif;resize:vertical;}
+  @media(max-width:560px){.form-grid{grid-template-columns:1fr;}}
 
+  /* case studies */
+  .case-card{background:var(--paper);color:var(--text-dark);border-radius:var(--radius);padding:16px;margin-bottom:12px;border-left:4px solid var(--green);}
+  .case-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;}
+  .case-client{font-family:'Oswald',sans-serif;font-weight:700;font-size:15.5px;text-transform:uppercase;letter-spacing:.01em;}
+  .case-vertical{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--green);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
+  .case-result{font-family:'Oswald',sans-serif;font-size:13.5px;font-weight:600;background:#dfeadd;color:#2d5535;border-radius:3px;padding:5px 10px;white-space:nowrap;}
+  .case-body{font-size:13.5px;line-height:1.55;margin-top:10px;color:#3a352c;}
+  .case-body b{color:#221f1a;}
+  .case-quote{margin-top:10px;padding:9px 11px;background:#f2ecd9;border-radius:3px;font-style:italic;font-size:13px;color:#4a4335;border-left:3px solid var(--yellow);}
+  .case-flag{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.04em;text-transform:uppercase;color:#8a8072;margin-top:8px;}
+  .case-del{background:transparent;border:1px solid #cfc6ae;color:#8a8072;padding:4px 7px;font-size:10px;margin-left:8px;}
+  .case-del:hover{border-color:var(--red);color:var(--red);}
+
+  /* diagnostic scripts */
+  .script-card{background:var(--paper);color:var(--text-dark);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px;border-left:4px solid var(--blue);}
+  .script-title{font-family:'Oswald',sans-serif;font-size:15px;font-weight:600;text-transform:uppercase;letter-spacing:.02em;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;}
+  .script-tag{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;}
+  .opener{font-size:13.5px;line-height:1.55;margin-top:8px;font-style:italic;color:#3a352c;}
+  .pushback{margin-top:12px;padding-top:10px;border-top:1px dashed #cfc6ae;}
+  .pushback-label{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--red);margin-bottom:4px;}
+  .pushback-line{font-size:13px;font-style:italic;color:#4a4335;margin-bottom:4px;}
+  .response-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--green);margin-top:8px;margin-bottom:3px;}
+  .response-line{font-size:13.5px;line-height:1.5;color:#221f1a;background:#f2ecd9;border-radius:3px;padding:8px 10px;}
+
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--yellow);color:var(--text-dark);font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;padding:9px 16px;border-radius:var(--radius);opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;z-index:50;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-4px);}
+  .menu-btn{background:var(--panel-2);border:1px solid var(--line);color:var(--text);padding:9px 11px;border-radius:var(--radius);display:flex;flex-direction:column;gap:3px;justify-content:center;align-items:center;cursor:pointer;}
+  .menu-btn span{display:block;width:18px;height:2px;background:var(--text-dim);border-radius:1px;}
+  .menu-btn:hover span{background:var(--orange);}
+  .menu-overlay{position:fixed;inset:0;background:rgba(10,9,8,.7);display:none;z-index:100;align-items:flex-start;justify-content:flex-end;}
+  .menu-overlay.show{display:flex;}
+  .menu-panel{width:min(300px,84vw);height:100%;background:var(--panel);border-left:1px solid var(--line);padding:18px 16px;overflow-y:auto;animation:slideIn .16s ease;}
+  @keyframes slideIn{from{transform:translateX(16px);opacity:0;}to{transform:none;opacity:1;}}
+  .menu-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .menu-title{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.06em;font-size:13px;color:var(--text-dim);}
+  .menu-close{background:transparent;border:1px solid var(--line);color:var(--text-dim);padding:5px 9px;font-size:14px;}
+  .menu-close:hover{color:var(--text);border-color:#5a5148;}
+  .menu-group-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--orange-dim);margin:14px 0 6px;}
+  .menu-link{display:flex;flex-direction:column;gap:2px;padding:10px 11px;background:var(--panel-2);border:1px solid var(--line);border-radius:var(--radius);color:var(--text);text-decoration:none;margin-bottom:7px;}
+  .menu-link:hover{border-color:var(--orange);}
+  .menu-link.current{border-left:3px solid var(--orange);background:#332c25;}
+  .menu-link b{font-family:'Oswald',sans-serif;font-size:13.5px;text-transform:uppercase;letter-spacing:.01em;}
+  .menu-link small{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="clip">
+    <div class="clip-top">
+      <div>
+        <div class="eyebrow">Final Clean Division — Pain-Point Library</div>
+        <h1>Case Studies &amp; Diagnostics</h1>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="sub" id="statusLine">loading…</div>
+        <div class="menu-btn" id="menuBtn" aria-label="Open menu"><span></span><span></span><span></span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="menu-overlay" id="menuOverlay">
+    <div class="menu-panel">
+      <div class="menu-head">
+        <div class="menu-title">All Tools</div>
+        <button class="menu-close" id="menuCloseBtn">✕</button>
+      </div>
+      <div class="menu-group-label">Ops Board</div>
+      <a class="menu-link" href="../index.html"><b>Site Ops Board</b><small>index.html</small></a>
+      <div class="menu-group-label">Sales Pipeline</div>
+      <a class="menu-link" href="../LEADS/index.html"><b>Lead Engine</b><small>LEADS/index.html</small></a>
+      <a class="menu-link" href="../OPPORTUNITY/index.html"><b>Opportunity Pipeline</b><small>OPPORTUNITY/index.html</small></a>
+      <a class="menu-link current" href="../PAIN-POINTS/index.html"><b>Pain-Point Library</b><small>PAIN-POINTS/index.html — this page</small></a>
+      <div class="menu-group-label">Crew</div>
+      <a class="menu-link" href="../employee.html"><b>Crew App</b><small>employee.html</small></a>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="cases">Case Studies</button>
+    <button class="tab-btn" data-tab="diagnostics">Diagnostic Scripts</button>
+  </div>
+
+  <!-- ================= CASE STUDIES ================= -->
+  <div class="panel active" id="panel-cases">
+    <div class="card">
+      <div class="muted" style="margin-bottom:10px;">Proof beats a pitch every time. These are the stories the Diagnostic Scripts pull from — swap the sample entries for your own client results as you get them, and every objection response updates with real numbers.</div>
+      <div class="toolbar">
+        <span class="muted">Sample entries — replace with your real client outcomes</span>
+        <button class="ghost small" id="addCaseBtn">+ Add case study</button>
+      </div>
+      <div id="addCaseForm" style="display:none;" class="card">
+        <div class="form-grid">
+          <input type="text" id="ccClient" placeholder="Client type (e.g. General Contractor)">
+          <input type="text" id="ccVertical" placeholder="Vertical / tag (e.g. General Contractors)">
+          <input type="text" id="ccResult" placeholder="Headline result (e.g. 40% fewer delays)">
+          <input type="text" id="ccQuote" placeholder="Quote (optional)">
+          <textarea id="ccBody" placeholder="Problem → what we did → outcome, in a few sentences"></textarea>
+        </div>
+        <button id="saveCaseBtn">Save case study</button>
+        <button class="ghost" id="cancelCaseBtn">Cancel</button>
+      </div>
+      <div id="caseList"></div>
+    </div>
+  </div>
+
+  <!-- ================= DIAGNOSTIC SCRIPTS ================= -->
+  <div class="panel" id="panel-diagnostics">
+    <div class="card">
+      <div class="muted" style="margin-bottom:8px;">Ask before you pitch. Get the prospect to name their own pain out loud, then answer their pushback with a case study, not just a claim.</div>
+      <div class="toolbar">
+        <span class="muted">Discovery questions + proof-based comebacks</span>
+        <button class="ghost small" id="addScriptBtn">+ Add script</button>
+      </div>
+      <div id="addScriptForm" style="display:none;" class="card">
+        <div class="form-grid">
+          <input type="text" id="nsTitle" placeholder="Script title">
+          <input type="text" id="nsTag" placeholder="Tag (e.g. Discovery)">
+          <textarea id="nsBody" placeholder="Opening question…"></textarea>
+        </div>
+        <button id="saveScriptBtn">Save script</button>
+        <button class="ghost" id="cancelScriptBtn">Cancel</button>
+      </div>
+      <div id="scriptList"></div>
+    </div>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "process.env.REACT_APP_API_KEY",
+  authDomain: "tripn-7177f.firebaseapp.com",
+  projectId: "tripn-7177f",
+  storageBucket: "tripn-7177f.firebasestorage.app",
+  messagingSenderId: "859512329846",
+  appId: "1:859512329846:web:bd2a7ed89649f79ffa7157"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+async function getVal(key, shared, fallback){
+  try{ const doc = await db.collection('kv').doc(key).get(); return doc.exists ? JSON.parse(doc.data().value) : fallback; }
+  catch(e){ console.error("getVal failed", key, e); return fallback; }
+}
+async function setVal(key, shared, value){
+  try{ await db.collection('kv').doc(key).set({value: JSON.stringify(value), updatedAt: Date.now()}); }
+  catch(e){ console.error("storage set failed", key, e); }
+}
+
+let cases = [];
+let scripts = [];
+
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1800); }
+function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+const menuOverlay = document.getElementById('menuOverlay');
+document.getElementById('menuBtn').addEventListener('click', ()=> menuOverlay.classList.add('show'));
+document.getElementById('menuCloseBtn').addEventListener('click', ()=> menuOverlay.classList.remove('show'));
+menuOverlay.addEventListener('click', (e)=>{ if(e.target===menuOverlay) menuOverlay.classList.remove('show'); });
+
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ============ CASE STUDY SEED (sample — replace with real client outcomes) ============ */
+const CASE_SEED = [
+{id:"cs1", client:"General Contractor — Craftworks-style custom home builder", vertical:"General Contractors", result:"40% fewer closing-day delays",
+ body:"A mid-size custom home builder was losing closing dates to same-day final-clean scrambles — their own crew was pulled off the next job to scrub down a finished house. We took over final cleans on a standing schedule tied to their punch-list sign-off, so the house was walkthrough-ready the moment the builder called it done.",
+ quote:"We stopped losing our framing crew to mop buckets.", demo:true},
+{id:"cs2", client:"Property Management — regional portfolio manager", vertical:"Property Managers", result:"Turnover time cut from 6 days to 3",
+ body:"A property manager overseeing several hundred units had a maintenance team stretched thin during peak move-out season, with vacant units sitting empty and un-leased while waiting on cleaning. We took the cleaning step off maintenance's plate entirely, working same-day with move-out inspections.",
+ quote:"Every extra vacant day was rent we weren't collecting — this got units back on the market fast.", demo:true},
+{id:"cs3", client:"Restoration Company — water/fire mitigation firm", vertical:"Restoration Companies", result:"20% more jobs closed per month",
+ body:"A restoration company's crews were finishing repair work but getting stuck doing the final detail clean before handing keys back to homeowners, which delayed them starting their next job. We stepped in as their standing final-clean partner so their crews could roll straight to the next call.",
+ quote:"Our guys stopped being cleaners at the end of every job.", demo:true},
+{id:"cs4", client:"Multifamily — Class-A apartment community", vertical:"Multifamily / Apartment Communities", result:"Zero missed make-ready deadlines over a leasing season",
+ body:"A Class-A community's leasing office kept missing move-in dates during peak leasing season because make-ready cleaning couldn't keep pace with turns. We built a standing weekly schedule plus a same-day emergency line for rush turns, and the community hit every promised move-in date for the rest of the season.",
+ quote:"Leasing stopped apologizing to new residents about move-in dates.", demo:true},
+{id:"cs5", client:"General Contractor — commercial punch-list crew", vertical:"General Contractors", result:"100% on-time punch-list sign-offs, 6 months straight",
+ body:"A commercial GC was getting dinged on punch-list walkthroughs over dust and debris left behind by trade crews, delaying sign-off and payment. We scheduled a final detail pass ahead of every scheduled walkthrough, timed to the GC's own punch-list calendar.",
+ quote:"Inspectors stopped writing us up for dust.", demo:true}
+];
+
+/* ============ DIAGNOSTIC SCRIPTS SEED ============ */
+const PAIN_SCRIPTS_SEED = [
+{id:"ps1", title:"Discovery — Surface the Pain First", tag:"Discovery",
+ opener:"Before I tell you anything about us — when was the last time a final clean held up a walkthrough, a move-in, or a closing? Walk me through what happened.",
+ chain:[
+   {pushback:"“Honestly, that doesn't really happen to us.”",
+    response:"“That's great to hear, and it's rarer than you'd think. Can I ask what you're doing today that makes that true — in-house crew, a regular vendor, something else? I ask because most of the property managers I work with who said the same thing were one bad week away from it happening.”"},
+   {pushback:"“It happens more than I'd like to admit.”",
+    response:"“That's exactly the kind of thing we fixed for a property manager running a few hundred units — we got their turnover time from six days down to three just by taking cleaning off their maintenance team's plate. Want me to walk you through how that worked?”"}
+ ]},
+{id:"ps2", title:"Diagnostic — Cost of the Current Approach", tag:"Discovery",
+ opener:"If your current setup for final cleaning went down for a week — sick crew, no-show vendor, whatever — what would that actually cost you? Not in dollars necessarily, just: what breaks?",
+ chain:[
+   {pushback:"“We'd figure something out, it wouldn't be a big deal.”",
+    response:"“Fair — a lot of people say that until it happens. One GC we work with said the exact same thing, right up until a closing got pushed a week because their crew got pulled to cover a final clean. That delay is what got them to bring us on as a backup, even though their in-house setup was 'fine' 95% of the time.”"},
+   {pushback:"“It would definitely slow us down, but switching vendors feels like a hassle.”",
+    response:"“That's the most common objection I hear, and it's a fair one. That's exactly why we don't ask anyone to switch on day one — we start as the backup for the week your main option falls through, so there's no hassle, no contract, just a name in your phone for the day you need it.”"}
+ ]},
+{id:"ps3", title:"Objection — “We've Never Had a Problem”", tag:"Skepticism",
+ opener:"“Honestly, we've never had a problem with cleaning before — I don't see why we'd change anything.”",
+ chain:[
+   {pushback:"(their opening objection)",
+    response:"“That's a good sign, and I'm not trying to talk you out of what's working. Here's the thing — the community we worked with on Edgewater said the exact same thing until their maintenance team hit peak leasing season and cleaning became the bottleneck nobody saw coming. We're not pitching a replacement, just a name on file for the week your team's stretched thin.”"},
+   {pushback:"“I hear you, but I really don't think we'll need it.”",
+    response:"“Totally fine — can I leave you with one thing instead of a pitch? A one-page case study on how we helped a team like yours handle their peak season. No follow-up call required, just read it whenever cleaning becomes a headache.”"}
+ ]},
+{id:"ps4", title:"Proof Close — Case Study Handoff", tag:"Proof",
+ opener:"Based on what you've told me, this sounds a lot like what we ran into with [matching case study client type] — want me to send you that one? It's the closest match to your situation and shows exactly what changed for them.",
+ chain:[
+   {pushback:"“Sure, send it, but I'm not committing to anything.”",
+    response:"“That's exactly the right amount of commitment — zero. Read it, see if it sounds like your situation, and if it does, we'll talk. If it doesn't, no hard feelings either way.”"},
+   {pushback:"“I don't really read case studies, just tell me the number.”",
+    response:"“Fair enough — the short version: that client cut their turnaround time in half and stopped missing deadlines. If that's the kind of result you'd want, let's set up 15 minutes to see if it applies to you the same way.”"}
+ ]}
+];
+
+function renderCases(){
+  const list = document.getElementById('caseList');
+  list.innerHTML = "";
+  if(!cases.length){ list.innerHTML = `<div class="muted" style="padding:10px 0;">No case studies yet.</div>`; return; }
+  cases.forEach(c=>{
+    const card = document.createElement('div');
+    card.className = "case-card";
+    card.innerHTML = `
+      <div class="case-top">
+        <div>
+          <div class="case-client">${escapeHtml(c.client)}</div>
+          <div class="case-vertical">${escapeHtml(c.vertical)}</div>
+        </div>
+        <div class="case-result">${escapeHtml(c.result)}</div>
+      </div>
+      <div class="case-body">${escapeHtml(c.body)}</div>
+      ${c.quote?`<div class="case-quote">"${escapeHtml(c.quote)}"</div>`:""}
+      ${c.demo?`<div class="case-flag">Sample entry — replace with a real client result <button class="small case-del" data-id="${c.id}">Remove</button></div>`:`<div class="case-flag"><button class="small case-del" data-id="${c.id}">Remove</button></div>`}`;
+    list.appendChild(card);
+  });
+  list.querySelectorAll('.case-del').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      cases = cases.filter(c=>c.id!==btn.dataset.id);
+      await setVal('case-studies-data', true, cases);
+      renderCases();
+      toast("Case study removed");
+    });
+  });
+}
+document.getElementById('addCaseBtn').addEventListener('click', ()=>{ document.getElementById('addCaseForm').style.display='block'; });
+document.getElementById('cancelCaseBtn').addEventListener('click', ()=>{ document.getElementById('addCaseForm').style.display='none'; });
+document.getElementById('saveCaseBtn').addEventListener('click', async ()=>{
+  const client = document.getElementById('ccClient').value.trim();
+  const body = document.getElementById('ccBody').value.trim();
+  if(!client || !body){ toast("Client type and description required"); return; }
+  cases.unshift({
+    id:"cs-"+Date.now(), client,
+    vertical: document.getElementById('ccVertical').value.trim()||"General",
+    result: document.getElementById('ccResult').value.trim()||"Result pending",
+    quote: document.getElementById('ccQuote').value.trim(),
+    body, demo:false
+  });
+  await setVal('case-studies-data', true, cases);
+  ['ccClient','ccVertical','ccResult','ccQuote','ccBody'].forEach(id=>document.getElementById(id).value="");
+  document.getElementById('addCaseForm').style.display='none';
+  renderCases();
+  toast("Case study added");
+});
+
+function renderScripts(){
+  const list = document.getElementById('scriptList');
+  list.innerHTML = "";
+  scripts.forEach(s=>{
+    const card = document.createElement('div');
+    card.className = "script-card";
+    let chainHtml = "";
+    if(s.chain && s.chain.length){
+      chainHtml = s.chain.map((step,i)=>`
+        <div class="pushback">
+          <div class="pushback-label">If they push back ${i+1}</div>
+          <div class="pushback-line">${escapeHtml(step.pushback)}</div>
+          <div class="response-label">Your response</div>
+          <div class="response-line">${escapeHtml(step.response)}</div>
+        </div>`).join("");
+    }
+    card.innerHTML = `
+      <div class="script-title"><span>${escapeHtml(s.title)}</span><button class="small" data-copy="${s.id}">Copy opener</button></div>
+      <div class="script-tag">${escapeHtml(s.tag)}</div>
+      <div class="opener">"${escapeHtml(s.opener)}"</div>
+      ${chainHtml}`;
+    list.appendChild(card);
+  });
+  list.querySelectorAll('[data-copy]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const s = scripts.find(x=>x.id===btn.dataset.copy);
+      navigator.clipboard?.writeText(s.opener).then(()=>toast("Copied to clipboard")).catch(()=>toast("Copy failed"));
+    });
+  });
+}
+document.getElementById('addScriptBtn').addEventListener('click', ()=>{ document.getElementById('addScriptForm').style.display='block'; });
+document.getElementById('cancelScriptBtn').addEventListener('click', ()=>{ document.getElementById('addScriptForm').style.display='none'; });
+document.getElementById('saveScriptBtn').addEventListener('click', async ()=>{
+  const title = document.getElementById('nsTitle').value.trim();
+  const body = document.getElementById('nsBody').value.trim();
+  if(!title || !body){ toast("Title and opening question required"); return; }
+  scripts.unshift({id:"ps-"+Date.now(), title, tag:document.getElementById('nsTag').value.trim()||"Custom", opener:body, chain:[]});
+  await setVal('painpoint-scripts-library', true, scripts);
+  ['nsTitle','nsTag','nsBody'].forEach(id=>document.getElementById(id).value="");
+  document.getElementById('addScriptForm').style.display='none';
+  renderScripts();
+  toast("Script saved");
+});
+
+async function init(){
+  let c = await getVal('case-studies-data', true, null);
+  if(!c){ c = CASE_SEED; await setVal('case-studies-data', true, c); }
+  cases = c;
+  renderCases();
+
+  let s = await getVal('painpoint-scripts-library', true, null);
+  if(!s){ s = PAIN_SCRIPTS_SEED; await setVal('painpoint-scripts-library', true, s); }
+  scripts = s;
+  renderScripts();
+
+  document.getElementById('statusLine').textContent = `${cases.length} case studies · ${scripts.length} scripts`;
+}
+init();
+</script>
+</body>
+</html>
