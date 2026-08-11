@@ -189,10 +189,9 @@
 
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
-
 <script>
 const firebaseConfig = {
-  apiKey: "process.env.REACT_APP_API_KEY",
+  apiKey: "AIzaSyAO4cniAn_qkjL7nUfqKZbyXbhiokdoafg",
   authDomain: "tripn-7177f.firebaseapp.com",
   projectId: "tripn-7177f",
   storageBucket: "tripn-7177f.firebasestorage.app",
@@ -200,8 +199,10 @@ const firebaseConfig = {
   appId: "1:859512329846:web:bd2a7ed89649f79ffa7157"
 };
 firebase.initializeApp(firebaseConfig);
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx2Z990whylhthzR9OtTrzQxCWqG3HTj86ZpoBzGXHoV7dhjns60jX1UMPNyHCSJMW6cQ/exec"; 
 const db = firebase.firestore();
+const APPS_SCRIPT_URL =
+  "https://script.google.com/macros/s/AKfycbx2Z990whylhthzR9OtTrzQxCWqG3HTj86ZpoBzGXHoV7dhjns60jX1UMPNyHCSJMW6cQ/exec";
+
 
 async function getVal(key, shared, fallback){
   try{ const doc = await db.collection('kv').doc(key).get(); return doc.exists ? JSON.parse(doc.data().value) : fallback; }
